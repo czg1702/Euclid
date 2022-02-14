@@ -135,8 +135,12 @@ f_0:
             __uint64_t ax_span = cs_axis_span(cs, j);
             measure_space_idx += sc_posi * ax_span;
         }
-        fread(tmp_buf, vals_count * (sizeof(double) + sizeof(char)), 1, data_f);
-        space_add_measure(space, measure_space_idx, tmp_buf);
+        size_t cell_mem_sz = vals_count * (sizeof(double) + sizeof(char));
+        fread(tmp_buf, cell_mem_sz, 1, data_f);
+        void *cell = mem_alloc_0(cell_mem_sz);
+        memcpy(cell, tmp_buf, cell_mem_sz);
+
+        space_add_measure(space, measure_space_idx, cell);
     }
 
 f_1:
@@ -170,9 +174,9 @@ Axis *cs_get_axis(CoordinateSystem *cs, int axis_position)
 
 void *scal__destory(void *scale)
 {
-    // TODO
-    // TODO
-    // TODO
+    Scale *s = (Scale *)scale;
+    release_mem(s->fragments);
+    release_mem(s);
 }
 
 Scale *scal_create()
@@ -260,9 +264,7 @@ int cell_cmp(void *cell, void *other)
 
 static void *_cell__destory(void *cell)
 {
-    // TODO
-    // TODO
-    // TODO
+    release_mem(cell);
 }
 
 MeasureSpace *space_create(size_t segment_count, size_t segment_scope, int cell_vals_count)
@@ -293,10 +295,9 @@ void space_plan(MeasureSpace *space)
     int i;
     for (i = 0; i < space->segment_count; i++)
     {
-        space->data_ls_h[i] = mem_alloc_0(rbt__size(space->tree_ls_h[i]) * (sizeof(unsigned long) + space->cell_vals_count * (sizeof(double) + sizeof(int))));
-        // TODO
-        // TODO
-        // TODO
+        unsigned int actual_cells_sz = rbt__size(space->tree_ls_h[i]);
+        int posi_cell_sz = (sizeof(unsigned long) + space->cell_vals_count * (sizeof(double) + sizeof(int)));
+        space->data_ls_h[i] = mem_alloc_0(actual_cells_sz * posi_cell_sz);
         rbt__scan_do(space->tree_ls_h[i], space->data_ls_h[i], build_space_measure);
         rbt__clear(space->tree_ls_h[i]);
     }
@@ -305,6 +306,7 @@ void space_plan(MeasureSpace *space)
 __uint64_t ax_scale_position(Axis *axis, int fgs_len, void *fragments)
 {
     Scale *s = scal__alloc(fgs_len, fragments);
+    scal__show(s);
     RBNode *n = rbt__find(axis->rbtree, s);
     return n->index;
 }
@@ -322,4 +324,15 @@ void space_add_measure(MeasureSpace *space, __uint64_t measure_position, void *c
         ++seg_num;
 
     rbt_add(space->tree_ls_h[seg_num], cell);
+}
+
+void scal__show(Scale *s)
+{
+    printf("\n\n>>>>>>>>>>>    Scale %p    fragments_len %d\n\t\t", s, s->fragments_len);
+    int i;
+    for (i = 0; i < s->fragments_len; i++)
+    {
+        printf("    %lu", s->fragments[i]);
+    }
+    printf("\n\n\n");
 }

@@ -28,6 +28,7 @@ void rbt_add(RedBlackTree *rbt, void *obj)
 	// [1] The new node has no parent node
 	if (rbt->root == NULL)
 	{
+		rbt_set_node_color(node, BLACK_NODE);
 		rbt->root = node;
 		return;
 	}
@@ -150,7 +151,7 @@ RBNode *rbt__find(RedBlackTree *t, void *obj)
 		if (cmp == 0)
 			return current_node;
 
-		current_node = cmp < 0 ? current_node->child_left : current_node->child_right;
+		current_node = cmp < 0 ? current_node->child_right : current_node->child_left;
 	}
 }
 

@@ -1,0 +1,12 @@
+./euclid-cli create dimensions Transport
+
+./euclid-cli create members \
+[Transport].[railway], \
+[Transport].[highway]
+
+./euclid-cli build cube [logistics.test] \
+dimensions Transport Transport measures cost
+
+./euclid-cli " insert [logistics.test] " \
+" ( [Transport].[railway] measures cost 123.456 ), " \
+" ( [Transport].[highway] measures cost 666.888 )"

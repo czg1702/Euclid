@@ -9,7 +9,6 @@
 
 typedef struct _coordinate_system
 {
-    // TODO
     __uint64_t id;
     ArrayList *axes;
 } CoordinateSystem;
@@ -18,7 +17,6 @@ CoordinateSystem *cs_create(__uint64_t *id_addr);
 
 typedef struct _coordinate_axis
 {
-    // TODO
     RedBlackTree *rbtree;
 } Axis;
 
@@ -36,6 +34,8 @@ typedef struct _axis_scale
     __uint64_t *fragments;
     int fragments_len;
 } Scale;
+
+void scal__show(Scale *);
 
 Scale *scal_create();
 
@@ -57,7 +57,6 @@ void vce_init();
 
 typedef struct _measure_space_
 {
-    // TODO
     __uint64_t id;
     size_t segment_count;
     size_t segment_scope;
