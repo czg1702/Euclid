@@ -1,4 +1,4 @@
-./euclid-cli create dimensions Region Calendar Goods Transport
+#!/bin/bash
 
 ./euclid-cli create members \
 [Region].[Asia].[China], \
@@ -47,13 +47,3 @@
 [Goods].[household appliances].[washing machine], \
 [Goods].[household appliances].[refrigerator], \
 [Goods].[household appliances].[television]
-
-./euclid-cli build cube [logistics.test] \
-dimensions Goods Goods Transport Transport Region [starting region] Region [ending region] Calendar [starting date] Calendar [completion date] \
-measures cost income quantity
-
-./euclid-cli " insert [logistics.test] " \
-" ( [Goods].[foods].[nut], Transport.[ocean freight], [starting region].[Asia].China, [ending region].Asia.[China], " \
-" [starting date].[2019].Q3.M8, [completion date].[2021].[Q1].[M3] measures quantity 333.333 income 222.222 cost 111.111 ), " \
-" ( Goods.foods.nut, Transport.[ocean freight], [starting region].[Asia].China, [ending region].Asia.[China], " \
-" [starting date].[2019].Q3.M8, [completion date].[2021].[Q1].[M3] measures [income] 234 [cost] 123 ) "

@@ -227,7 +227,7 @@ int scal_cmp(void *_one, void *_other)
 
 void space_unload(__uint64_t id)
 {
-    // TODO later
+    printf("// TODO later --- void space_unload(__uint64_t id)\n");
 }
 
 void ax_reordering(Axis *axis)
@@ -285,22 +285,29 @@ MeasureSpace *space_create(size_t segment_count, size_t segment_scope, int cell_
 
 void *build_space_measure(RBNode *node, void *mea_mem_addr)
 {
-    // TODO
-    // TODO
-    // TODO
+    printf("// TODO --- void *build_space_measure(RBNode *node, void *mea_mem_addr)\n");
 }
 
 void space_plan(MeasureSpace *space)
 {
+    printf("\n\n\n");
+    printf("********************************************* BEGIN - space_plan( <<:: %p ::>> ) \n", space);
+    printf("space->segment_count = %lu \n", space->segment_count);
     int i;
     for (i = 0; i < space->segment_count; i++)
     {
+        printf("\ni = %d \n", i);
         unsigned int actual_cells_sz = rbt__size(space->tree_ls_h[i]);
+        printf("actual_cells_sz = %u \n", actual_cells_sz);
         int posi_cell_sz = (sizeof(unsigned long) + space->cell_vals_count * (sizeof(double) + sizeof(int)));
+        printf("posi_cell_sz = %d \n", posi_cell_sz);
         space->data_ls_h[i] = mem_alloc_0(actual_cells_sz * posi_cell_sz);
+        printf("actual_cells_sz * posi_cell_sz = %lu \n", actual_cells_sz * posi_cell_sz);
         rbt__scan_do(space->tree_ls_h[i], space->data_ls_h[i], build_space_measure);
         rbt__clear(space->tree_ls_h[i]);
     }
+    printf("********************************************* FINISHED - space_plan\n");
+    printf("\n\n\n");
 }
 
 __uint64_t ax_scale_position(Axis *axis, int fgs_len, void *fragments)
