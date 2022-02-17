@@ -40,9 +40,15 @@ void rbt_add(RedBlackTree *rbt, void *obj)
 
 	int cmp_rs = rbt->comparison_func(obj, mount_p->obj);
 	if (cmp_rs < 0)
+	{
 		mount_p->child_left = node;
+		node->parent = mount_p->child_left;
+	}
 	else
+	{
 		mount_p->child_right = node;
+		node->parent = mount_p->child_right;
+	}
 
 	// [2] The parent node(mount_p) of the new node is black
 	if ((mount_p->attrs & 0x01) == BLACK_NODE)
@@ -120,13 +126,16 @@ RBNode *rbt_find_mount_point(RedBlackTree *rbt, RBNode *new_node)
 				return c_node;
 			c_node = c_node->child_left;
 		}
-		if (cmp_rs > 0)
+		else if (cmp_rs > 0)
 		{
 			if (c_node->child_right == NULL)
 				return c_node;
 			c_node = c_node->child_right;
 		}
-		return NULL;
+		else
+		{
+			return NULL;
+		}
 	}
 }
 

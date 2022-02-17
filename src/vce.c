@@ -335,11 +335,5 @@ void space_add_measure(MeasureSpace *space, __uint64_t measure_position, void *c
 
 void scal__show(Scale *s)
 {
-    printf("\n\n>>>>>>>>>>>    Scale %p    fragments_len %d\n\t\t", s, s->fragments_len);
-    int i;
-    for (i = 0; i < s->fragments_len; i++)
-    {
-        printf("    %lu", s->fragments[i]);
-    }
-    printf("\n\n\n");
+    printf("Scale <%p>\n", s);
 }
