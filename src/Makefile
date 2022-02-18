@@ -6,7 +6,6 @@ euclid : Euclid.c Euclid-cli.c $(SRC_FILES) Euclid.o Euclid-cli.o $(OBJ_FILES)
 	cc  -lpthread  -g  $(SRC_FILES)  Euclid.c      -o euclid.out
 	cc  -lpthread      $(OBJ_FILES)  Euclid-cli.o  -o euclid-cli
 	cc  -lpthread  -g  $(SRC_FILES)  Euclid-cli.c  -o euclid-cli.out
-	echo '------------------------- finished -------------------------'
 
 mdxext-lex.yy.c: mdxext-lex.l
 	flex -o mdxext-lex.yy.c mdxext-lex.l

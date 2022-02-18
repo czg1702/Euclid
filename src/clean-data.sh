@@ -2,4 +2,3 @@
 rm -f ./meta/*
 rm -f ./data/*
 rm -f ./*.log
-make clean
