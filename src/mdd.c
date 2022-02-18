@@ -39,7 +39,7 @@ Dimension *create_dimension(char *dim_name)
 		dims_pool = als_create(128, "dimensions pool");
 
 	als_add(dims_pool, dim);
-	printf("========================= dim->name %s\n", dim->name);
+	// printf("========================= dim->name %s\n", dim->name);
 	return dim;
 }
 
@@ -67,14 +67,14 @@ md_gid gen_md_gid()
 
 Member *create_member(ArrayList *mbr_path)
 {
-	printf(">>> create_member >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+	// printf(">>> create_member >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 	unsigned int sz = als_size(mbr_path);
 	int i = 0;
-	while (i < sz)
-	{
-		printf("%s\n", als_get(mbr_path, i));
-		i++;
-	}
+	// while (i < sz)
+	// {
+	// 	printf("%s\n", als_get(mbr_path, i));
+	// 	i++;
+	// }
 
 	Dimension *dim = find_dim_by_name(als_get(mbr_path, 0));
 	if (dim == NULL)
@@ -200,7 +200,7 @@ Member *_new_member(char *name, md_gid dim_gid, md_gid parent_gid, __u_short lv)
 	mbr->dim_gid = dim_gid;
 	mbr->p_gid = parent_gid;
 	mbr->lv = lv;
-	printf("******************************** mbr->name %s\n", mbr->name);
+	// printf("******************************** mbr->name %s\n", mbr->name);
 	return mbr;
 }
 
@@ -388,10 +388,10 @@ void *gen_member_gid_abs_path(Cube *cube, ArrayList *mbr_path_str)
 		break;
 	}
 
-	printf("dim_role_name [ %s ], dim->name [ %s ], lv1_mbr->name [ %s ]\n", dim_role_name, dim->name, lv1_mbr->name);
+	// printf("dim_role_name [ %s ], dim->name [ %s ], lv1_mbr->name [ %s ]\n", dim_role_name, dim->name, lv1_mbr->name);
 
 	__uint32_t sz = als_size(mbr_path_str);
-	printf("char *abs_path = mem_alloc_0(  %lu  );", sizeof(__uint32_t) + sizeof(md_gid) * (sz - 1));
+	// printf("char *abs_path = mem_alloc_0(  %lu  );", sizeof(__uint32_t) + sizeof(md_gid) * (sz - 1));
 	char *abs_path = mem_alloc_0(sizeof(__uint32_t) + sizeof(md_gid) * (sz - 1));
 	*((__uint32_t *)abs_path) = sz - 1;
 	*((md_gid *)(abs_path + sizeof(__uint32_t))) = lv1_mbr->gid;
@@ -400,7 +400,7 @@ void *gen_member_gid_abs_path(Cube *cube, ArrayList *mbr_path_str)
 	{
 		mbr = find_member_child(mbr, als_get(mbr_path_str, i));
 		*((md_gid *)(abs_path + sizeof(__uint32_t) + sizeof(md_gid) * (i - 1))) = mbr->gid;
-		printf("::>> child member name - %s\n", mbr->name);
+		// printf("::>> child member name - %s\n", mbr->name);
 	}
 
 	return abs_path;

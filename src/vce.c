@@ -128,7 +128,7 @@ f_0:
                 goto f_1;
 
             int scale_len = *((int *)tmp_buf);
-            printf(">>>>>>>>>>>>>> scale_len = scale_len%d\n", scale_len);
+            // printf(">>>>>>>>>>>>>> scale_len = scale_len%d\n", scale_len);
             fread(tmp_buf, sizeof(md_gid), scale_len, data_f);
             Axis *axis = cs_get_axis(cs, j);
             __uint64_t sc_posi = ax_scale_position(axis, scale_len, tmp_buf);
@@ -290,30 +290,30 @@ void *build_space_measure(RBNode *node, void *mea_mem_addr)
 
 void space_plan(MeasureSpace *space)
 {
-    printf("\n\n\n");
-    printf("********************************************* BEGIN - space_plan( <<:: %p ::>> ) \n", space);
-    printf("space->segment_count = %lu \n", space->segment_count);
+    // printf("\n\n\n");
+    // printf("********************************************* BEGIN - space_plan( <<:: %p ::>> ) \n", space);
+    // printf("space->segment_count = %lu \n", space->segment_count);
     int i;
     for (i = 0; i < space->segment_count; i++)
     {
-        printf("\ni = %d \n", i);
+        // printf("\ni = %d \n", i);
         unsigned int actual_cells_sz = rbt__size(space->tree_ls_h[i]);
-        printf("actual_cells_sz = %u \n", actual_cells_sz);
+        // printf("actual_cells_sz = %u \n", actual_cells_sz);
         int posi_cell_sz = (sizeof(unsigned long) + space->cell_vals_count * (sizeof(double) + sizeof(int)));
-        printf("posi_cell_sz = %d \n", posi_cell_sz);
+        // printf("posi_cell_sz = %d \n", posi_cell_sz);
         space->data_ls_h[i] = mem_alloc_0(actual_cells_sz * posi_cell_sz);
-        printf("actual_cells_sz * posi_cell_sz = %lu \n", actual_cells_sz * posi_cell_sz);
+        // printf("actual_cells_sz * posi_cell_sz = %lu \n", actual_cells_sz * posi_cell_sz);
         rbt__scan_do(space->tree_ls_h[i], space->data_ls_h[i], build_space_measure);
         rbt__clear(space->tree_ls_h[i]);
     }
-    printf("********************************************* FINISHED - space_plan\n");
-    printf("\n\n\n");
+    // printf("********************************************* FINISHED - space_plan\n");
+    // printf("\n\n\n");
 }
 
 __uint64_t ax_scale_position(Axis *axis, int fgs_len, void *fragments)
 {
     Scale *s = scal__alloc(fgs_len, fragments);
-    scal__show(s);
+    // scal__show(s);
     RBNode *n = rbt__find(axis->rbtree, s);
     return n->index;
 }
