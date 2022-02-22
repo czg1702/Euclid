@@ -319,6 +319,9 @@ static void rbt__do_reordering(RBNode *n, unsigned int *idx)
 
 void rbt__reordering(RedBlackTree *t)
 {
+	if (t->root == NULL)
+		return;
+
 	unsigned int idx = 0;
 	rbt__do_reordering(t->root, &idx);
 	t->size = idx;

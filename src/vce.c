@@ -136,9 +136,9 @@ f_0:
             measure_space_idx += sc_posi * ax_span;
         }
         size_t cell_mem_sz = vals_count * (sizeof(double) + sizeof(char));
-        fread(tmp_buf, cell_mem_sz, 1, data_f);
-        void *cell = mem_alloc_0(cell_mem_sz);
-        memcpy(cell, tmp_buf, cell_mem_sz);
+        void *cell = mem_alloc_0(sizeof(measure_space_idx) + cell_mem_sz);
+        *((unsigned long *)cell) = measure_space_idx;
+        fread(cell + sizeof(measure_space_idx), cell_mem_sz, 1, data_f);
 
         space_add_measure(space, measure_space_idx, cell);
     }
@@ -296,15 +296,19 @@ void space_plan(MeasureSpace *space)
     int i;
     for (i = 0; i < space->segment_count; i++)
     {
+        RedBlackTree *tree = space->tree_ls_h[i];
         // printf("\ni = %d \n", i);
-        unsigned int actual_cells_sz = rbt__size(space->tree_ls_h[i]);
+        unsigned int actual_cells_sz = rbt__size(tree);
         // printf("actual_cells_sz = %u \n", actual_cells_sz);
         int posi_cell_sz = (sizeof(unsigned long) + space->cell_vals_count * (sizeof(double) + sizeof(int)));
         // printf("posi_cell_sz = %d \n", posi_cell_sz);
         space->data_ls_h[i] = mem_alloc_0(actual_cells_sz * posi_cell_sz);
         // printf("actual_cells_sz * posi_cell_sz = %lu \n", actual_cells_sz * posi_cell_sz);
-        rbt__scan_do(space->tree_ls_h[i], space->data_ls_h[i], build_space_measure);
-        rbt__clear(space->tree_ls_h[i]);
+
+        rbt__reordering(tree);
+
+        rbt__scan_do(tree, space->data_ls_h[i], build_space_measure);
+        rbt__clear(tree);
     }
     // printf("********************************************* FINISHED - space_plan\n");
     // printf("\n\n\n");
@@ -320,17 +324,20 @@ __uint64_t ax_scale_position(Axis *axis, int fgs_len, void *fragments)
 
 __uint64_t cs_axis_span(CoordinateSystem *cs, int axis_order)
 {
-    Axis *x = cs_get_axis(cs, axis_order);
-    return x->rbtree->size;
+    unsigned int axes_count = als_size(cs->axes);
+    unsigned long span = 1;
+    int i;
+    for (i = axes_count - 1; i > axis_order; i--)
+    {
+        Axis *x = cs_get_axis(cs, i);
+        span *= rbt__size(x->rbtree);
+    }
+    return span;
 }
 
 void space_add_measure(MeasureSpace *space, __uint64_t measure_position, void *cell)
 {
-    unsigned long seg_num = measure_position / space->segment_scope;
-    if (measure_position % space->segment_scope)
-        ++seg_num;
-
-    rbt_add(space->tree_ls_h[seg_num], cell);
+    rbt_add(space->tree_ls_h[measure_position / space->segment_scope], cell);
 }
 
 void scal__show(Scale *s)
