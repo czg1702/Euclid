@@ -1,6 +1,8 @@
 meta/
 data/
 
+*.log
+
 euclid
 euclid-cli
 mdxext-lex.yy.c
