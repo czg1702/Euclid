@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 		"[Europe].[UK]",
 	};
 
-	int region_mbrs_count = 9;
+	int region_mbrs_count = 4;
 
 	char *calendar_mbrs[] = {
 		"[2019].[Q3].[M7]",
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 		"[2021].[Q2].[M6]",
 	};
 
-	int calendar_mbrs_count = 24;
+	int calendar_mbrs_count = 4;
 
 	char *transport_mbrs[] = {
 		"[railway]",
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 		"[household appliances].[television]",
 	};
 
-	int goods_mbrs_count = 9;
+	int goods_mbrs_count = 4;
 
 	int cell_count = goods_mbrs_count * transport_mbrs_count * region_mbrs_count * region_mbrs_count * calendar_mbrs_count * calendar_mbrs_count;
 	printf("cell_count = %d\n", cell_count);
@@ -90,8 +90,9 @@ int main(int argc, char *argv[])
 					{
 						for (r_completion_date = 0; r_completion_date < calendar_mbrs_count; r_completion_date++)
 						{
-							if (i++ % interval)
-								continue;
+							i++;
+							// if (i % interval)
+							// 	continue;
 
 							char *goods_m = goods_mbrs[r_Goods];
 							char *transport_m = transport_mbrs[r_Transport];
@@ -99,8 +100,8 @@ int main(int argc, char *argv[])
 							char *ending_region_m = region_mbrs[r_ending_region];
 							char *starting_date_m = calendar_mbrs[r_starting_date];
 							char *completion_date_m = calendar_mbrs[r_completion_date];
-							printf("\" (Goods.%s, Transport.%s, [starting region].%s, [ending region].%s, [starting date].%s, [completion date].%s measures quantity 333.333 income 222.222 cost 111.111 ), \" \\\n",
-								   goods_m, transport_m, starting_region_m, ending_region_m, starting_date_m, completion_date_m);
+							printf("\" (Goods.%s, Transport.%s, [starting region].%s, [ending region].%s, [starting date].%s, [completion date].%s measures quantity %d.11 income %d.22 cost %d.33 ), \" \\\n",
+								   goods_m, transport_m, starting_region_m, ending_region_m, starting_date_m, completion_date_m, i, i, i);
 						}
 					}
 				}
