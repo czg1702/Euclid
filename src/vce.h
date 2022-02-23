@@ -77,4 +77,6 @@ void space_add_measure(MeasureSpace *space, __uint64_t measure_position, void *c
 
 void space_plan(MeasureSpace *space);
 
+void space__destory(MeasureSpace *);
+
 #endif

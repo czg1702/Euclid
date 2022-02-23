@@ -350,9 +350,17 @@ void rbt__clear(RedBlackTree *t)
 {
 	if (t->root)
 		_release_rbt_node(t->root);
+
+	t->root = NULL;
 }
 
 void rbt__destory_node(RBNode *n)
 {
 	release_mem(n);
+}
+
+void rbt__destory(RedBlackTree *t)
+{
+	rbt__clear(t);
+	release_mem(t);
 }

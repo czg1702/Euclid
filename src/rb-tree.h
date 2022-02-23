@@ -37,6 +37,8 @@ void rbt__reordering(RedBlackTree *);
 
 void rbt__destory_node(RBNode *);
 
+void rbt__destory(RedBlackTree *);
+
 RedBlackTree *rbt_create(char *desc, int (*comparison_func)(void *obj, void *other), void *(*release_obj_func)(void *obj));
 
 void rbt_add(RedBlackTree *rbt, void *obj);

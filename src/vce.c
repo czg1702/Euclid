@@ -13,10 +13,12 @@
 #include "utils.h"
 
 static ArrayList *coor_sys_ls;
+static ArrayList *space_ls;
 
 void vce_init()
 {
     coor_sys_ls = als_create(16, "CoordinateSystem *");
+    space_ls = als_create(16, "MeasureSpace *");
 }
 
 int vce_append(EuclidCommand *ec)
@@ -148,6 +150,8 @@ f_1:
 
     space_plan(space);
 
+    als_add(space_ls, space);
+
     return 0;
 }
 
@@ -227,7 +231,17 @@ int scal_cmp(void *_one, void *_other)
 
 void space_unload(__uint64_t id)
 {
-    printf("// TODO later --- void space_unload(__uint64_t id)\n");
+    int i;
+    for (i = 0; i < als_size(space_ls); i++)
+    {
+        MeasureSpace *space = (MeasureSpace *)als_get(space_ls, i);
+        if (space->id == id)
+        {
+            als_remove(space_ls, space);
+            space__destory(space);
+            break;
+        }
+    }
 }
 
 void ax_reordering(Axis *axis)
@@ -283,35 +297,32 @@ MeasureSpace *space_create(size_t segment_count, size_t segment_scope, int cell_
     return s;
 }
 
-void *build_space_measure(RBNode *node, void *mea_mem_addr)
+void *build_space_measure(RBNode *node, void *callback_params)
 {
-    printf("// TODO --- void *build_space_measure(RBNode *node, void *mea_mem_addr)\n");
+    int cell_size = *((int *)callback_params); // bytes count
+    void *block_addr = *((void **)(callback_params + sizeof(int)));
+    memcpy(block_addr + cell_size * (node->index), node->obj + sizeof(long), cell_size);
 }
 
 void space_plan(MeasureSpace *space)
 {
-    // printf("\n\n\n");
-    // printf("********************************************* BEGIN - space_plan( <<:: %p ::>> ) \n", space);
-    // printf("space->segment_count = %lu \n", space->segment_count);
     int i;
     for (i = 0; i < space->segment_count; i++)
     {
         RedBlackTree *tree = space->tree_ls_h[i];
-        // printf("\ni = %d \n", i);
-        unsigned int actual_cells_sz = rbt__size(tree);
-        // printf("actual_cells_sz = %u \n", actual_cells_sz);
-        int posi_cell_sz = (sizeof(unsigned long) + space->cell_vals_count * (sizeof(double) + sizeof(int)));
-        // printf("posi_cell_sz = %d \n", posi_cell_sz);
-        space->data_ls_h[i] = mem_alloc_0(actual_cells_sz * posi_cell_sz);
-        // printf("actual_cells_sz * posi_cell_sz = %lu \n", actual_cells_sz * posi_cell_sz);
-
         rbt__reordering(tree);
 
-        rbt__scan_do(tree, space->data_ls_h[i], build_space_measure);
+        int cell_size = space->cell_vals_count * (sizeof(double) + sizeof(char));
+        unsigned int actual_cells_sz = rbt__size(tree);
+        int posi_cell_sz = (sizeof(unsigned long) + cell_size);
+        space->data_ls_h[i] = mem_alloc_0(actual_cells_sz * posi_cell_sz);
+
+        char callback_params[sizeof(int) + sizeof(void *)];
+        *((int *)callback_params) = cell_size;
+        memcpy(&(callback_params[sizeof(int)]), space->data_ls_h + i, sizeof(void *));
+        rbt__scan_do(tree, callback_params, build_space_measure);
         rbt__clear(tree);
     }
-    // printf("********************************************* FINISHED - space_plan\n");
-    // printf("\n\n\n");
 }
 
 __uint64_t ax_scale_position(Axis *axis, int fgs_len, void *fragments)
@@ -337,10 +348,30 @@ __uint64_t cs_axis_span(CoordinateSystem *cs, int axis_order)
 
 void space_add_measure(MeasureSpace *space, __uint64_t measure_position, void *cell)
 {
+    // printf("[DEBUG] space_add_measure ()    %lu\n", *((unsigned long *)cell));
     rbt_add(space->tree_ls_h[measure_position / space->segment_scope], cell);
 }
 
 void scal__show(Scale *s)
 {
     printf("Scale <%p>\n", s);
+}
+
+void space__destory(MeasureSpace *s)
+{
+    size_t i;
+    for (i = 0; i < s->segment_count; i++)
+    {
+        if (s->tree_ls_h[i])
+            rbt__destory(s->tree_ls_h[i]);
+
+        if (s->data_ls_h[i])
+            release_mem(s->data_ls_h[i]);
+    }
+
+    release_mem(s->tree_ls_h);
+
+    release_mem(s->data_ls_h);
+
+    release_mem(s);
 }
