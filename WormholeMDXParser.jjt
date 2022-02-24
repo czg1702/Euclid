@@ -1,0 +1,1356 @@
+/*
+java jjtree WormholeMDXParser.jjt
+java javacc WormholeMDXParser.jj
+*/
+options {
+//	JDK_VERSION         = "1.5"; // why not use JDK 1.8 ?
+
+	STATIC              = false;
+
+	MULTI               = true;
+	NODE_USES_PARSER    = true;
+	VISITOR             = true;
+
+	JAVA_UNICODE_ESCAPE = true;
+	UNICODE_INPUT       = true;
+
+//	USER_TOKEN_MANAGER  = true; // default option is false
+}
+
+PARSER_BEGIN(WormholeMDXParser)
+
+package cn.bgotech.wormhole.olap.mdx.parser;
+
+import java.io.StringReader;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.LinkedList;
+
+import cn.bgotech.wormhole.olap.OlapEngine;
+
+import cn.bgotech.wormhole.olap.mdx.*;
+import cn.bgotech.wormhole.olap.mdx.auxi.*;
+
+import cn.bgotech.wormhole.olap.mdx.profile.*;
+import cn.bgotech.wormhole.olap.mdx.bg_expansion.*;
+
+import cn.bgotech.wormhole.olap.mdx.syntax.exp.*;
+import cn.bgotech.wormhole.olap.mdx.syntax.b00lean.exp.*;
+import cn.bgotech.wormhole.olap.mdx.syntax.structures.*;
+
+import cn.bgotech.wormhole.olap.mdx.syntax.fun.exp.*;
+import cn.bgotech.wormhole.olap.mdx.syntax.fun.member.*;
+import cn.bgotech.wormhole.olap.mdx.syntax.fun.set.*;
+
+import cn.bgotech.wormhole.olap.mdx.syntax.b00lean.functions.*;
+
+public class WormholeMDXParser {
+
+//	private SimpleNode root = null;
+
+    private OlapEngine olapEngine;
+
+    public static String peelShell(String s) {
+        s = s.trim();
+        return s.substring(1, s.length() - 1).trim();
+    }
+
+    public WormholeMDXParser(String mdx, OlapEngine olapEngine) {
+        this(new StringReader(mdx));
+        this.olapEngine = olapEngine;
+    }
+
+//	public SimpleNode getRoot() {
+//		return root;
+//	}
+
+}
+
+PARSER_END(WormholeMDXParser)
+
+/* white space */
+SKIP: {
+	  " "
+	| "\t"
+	| "\n"
+	| "\r"
+	| "\f"
+}
+
+/* Single line comment */
+SPECIAL_TOKEN: {
+  	< SINGLE_LINE_COMMENT : "--" ( ~[ "\n" , "\r" ] )* ( "\n" | "\r" | "\r\n" )? >
+  | < SINGLE_LINE_COMMENT_2 : "//" ( ~[ "\n" , "\r" ] )* ( "\n" | "\r" | "\r\n" )? >
+}
+
+/* Reserved Keywords */
+TOKEN [IGNORE_CASE]:
+{
+     <ABSOLUTE: "absolute">
+  |  <ACTIONPARAMETERSET: "actionparameterset">
+  |  <ADDCALCULATEDMEMBERS: "addcalculatedmembers">
+  |  <AGGREGATE: "aggregate">
+  |  <ALLMEMBERS: "allmembers">
+  |  <ANCESTOR: "ancestor">
+  |  <ANCESTORS: "ancestors">
+  |  <ASCENDANTS: "ascendants">
+  |  <AVERAGE: "average">
+  |  <AXIS: "axis">
+  |  <BOTTOMCOUNT: "bottomcount">
+  |  <BOTTOMSUM: "bottomsum">
+  |  <BY: "by">
+  |  <CACHE: "cache">
+  |  <CALCULATE: "calculate">
+  |  <CALCULATION: "calculation">
+  |  <CALCULATIONCURRENTPASS: "calculationcurrentpass">
+  |  <CALCULATIONPASSVALUE: "calculationpassvalue">
+  |  <CALCULATIONS: "calculations">
+  |  <CALL: "call">
+  |  <CASE: "case">
+  |  <CAST: "cast">
+  |  <CELL: "cell">
+  |  <CELLFORMULASETLIST: "cellformulasetlist">
+  |  <CLEAR: "clear">
+  |  <CLOSINGPERIOD: "closingperiod">
+  |  <COLUMN: "column">
+  |  <CORRELATION: "correlation">
+  |  <COUSIN: "cousin">
+  |  <COVARIANCE: "covariance">
+  |  <COVARIANCEN: "covariancen">
+  |  <CREATEPROPERTYSET: "createpropertyset">
+  |  <CREATEVIRTUALDIMENSION: "createvirtualdimension">
+  |  <CURRENT: "current">
+  |  <CURRENTCUBE: "currentcube">
+  |  <DEFAULT_MEMBER: "default_member">
+  |  <DEFAULTMEMBER: "defaultmember">
+  |  <DESCRIPTION: "description">
+  |  <DIMENSIONS: "dimensions">
+  |  <DISTINCT: "distinct">
+  |  <DISTINCTCOUNT: "distinctcount">
+  |  <DRILLDOWNLEVEL: "drilldownlevel">
+  |  <DRILLDOWNLEVELBOTTOM: "drilldownlevelbottom">
+  |  <DRILLDOWNLEVELTOP: "drilldownleveltop">
+  |  <DRILLDOWNMEMBER: "drilldownmember">
+  |  <DRILLDOWNMEMBERBOTTOM: "drilldownmemberbottom">
+  |  <DRILLDOWNMEMBERTOP: "drilldownmembertop">
+  |  <DRILLTHROUGH: "drillthrough">
+  |  <DRILLUPLEVEL: "drilluplevel">
+  |  <DRILLUPMEMBER: "drillupmember">
+  |  <DROP: "drop">
+  |  <ELSE: "else">
+  |  <EMPTY: "empty">
+  |  <END: "end">
+  |  <ERROR: "error">
+  |  <EXCLUDEEMPTY: "excludeempty">
+  |  <EXPLAIN: "explain">
+  |  <EXTRACT: "extract">
+  |  <FALSE: "false">
+  |  <FIRSTCHILD: "firstchild">
+  |  <FIRSTROWSET: "firstrowset">
+  |  <FIRSTSIBLING: "firstsibling">
+  |  <FOR: "for">
+  |  <FREEZE: "freeze">
+  |  <GENERATE: "generate">
+  |  <GLOBAL: "global">
+  |  <GROUP: "group">
+  |  <GROUPING: "grouping">
+  |  <HEAD: "head">
+  |  <HIDDEN: "hidden">
+  |  <HIERARCHIZE: "hierarchize">
+  |  <HIERARCHY: "hierarchy">
+  |  <IF: "if">
+  |  <IGNORE: "ignore">
+  |  <IN: "in">
+  |  <INCLUDEEMPTY: "includeempty">
+  |  <INDEX: "index">
+  |  <IS: "is">
+  |  <ISANCESTOR: "isancestor">
+  |  <ISGENERATION: "isgeneration">
+  |  <ISLEAF: "isleaf">
+  |  <ISSIBLING: "issibling">
+  |  <ITEM: "item">
+  |  <LAG: "lag">
+  |  <LASTCHILD: "lastchild">
+  |  <LASTPERIODS: "lastperiods">
+  |  <LASTSIBLING: "lastsibling">
+  |  <LEAD: "lead">
+  |  <LEVEL: "level">
+  |  <LEVELS: "levels">
+  |  <LINKMEMBER: "linkmember">
+  |  <LINREGINTERCEPT: "linregintercept">
+  |  <LINREGPOINT: "linregpoint">
+  |  <LINREGR2: "linregr2">
+  |  <LINREGSLOPE: "linregslope">
+  |  <LINREGVARIANCE: "linregvariance">
+  |  <MATCHES: "matches">
+  |  <MAXROWS: "maxrows">
+  |  <MAX: "max" >
+  |  <MEASURE: "measure">
+  |  <MEDIAN: "median">
+  |  <MEMBERTOSTR: "membertostr">
+  |  <MIN: "min">
+  |  <MTD: "mtd">
+  |  <NAME: "name">
+  |  <NAMETOSET: "nametoset">
+  |  <NEST: "nest">
+  |  <NEXTMEMBER: "nextmember">
+  |  <NO_ALLOCATION: "no_allocation">
+  |  <NO_PROPERTIES: "no_properties">
+  |  <NON: "non">
+  |  <NONEMPTYCROSSJOIN: "nonemptycrossjoin">
+  |  <NOT_RELATED_TO_FACTS: "not_related_to_facts">
+  |  <NULL: "null">
+  |  <OPENINGPERIOD: "openingperiod">
+  |  <PASS: "pass">
+  |  <PERIODSTODATE: "periodstodate">
+  |  <PLAN: "plan">
+  |  <POST: "post">
+  |  <PREDICT: "predict">
+  |  <PROPERTY: "property">
+  |  <QTD: "qtd">
+  |  <RANK: "rank">
+  |  <RECURSIVE: "recursive">
+  |  <RELATIVE: "relative">
+  |  <RETURN: "return">
+  |  <ROLLUPCHILDREN: "rollupchildren">
+  |  <ROOT: "root">
+  |  <SCOPE: "scope">
+  |  <SESSION: "session">
+  |  <SETTOARRAY: "settoarray">
+  |  <SETTOSTR: "settostr">
+  |  <SORT: "sort">
+  |  <STDDEV: "stddev">
+  |  <STDDEVP: "stddevp">
+  |  <STDEV: "stdev">
+  |  <STDEVP: "stdevp">
+  |  <STORAGE: "storage">
+  |  <STRIPCALCULATEDMEMBERS: "stripcalculatedmembers">
+  |  <STRTOMEMBER: "strtomember">
+  |  <STRTOSET: "strtoset">
+  |  <STRTOTUPLE: "strtotuple">
+  |  <STRTOVAL: "strtoval">
+  |  <STRTOVALUE: "strtovalue">
+  |  <SUBSET: "subset">
+  |  <THEN: "then">
+  |  <THIS: "this">
+  |  <TOGGLEDRILLSTATE: "toggledrillstate">
+  |  <TOPSUM: "topsum">
+  |  <TOTALS: "totals">
+  |  <TREE: "tree">
+  |  <TRUE: "true">
+  |  <TUPLETOSTR: "tupletostr">
+  |  <TYPE: "type">
+  |  <UNIQUE: "unique">
+  |  <UNIQUENAME: "uniquename">
+  |  <USE: "use">
+  |  <USE_EQUAL_ALLOCATION: "use_equal_allocation">
+  |  <USE_WEIGHTED_ALLOCATION: "use_weighted_allocation">
+  |  <USE_WEIGHTED_INCREMENT: "use_weighted_increment">
+  |  <USERNAME: "username">
+  |  <VALIDMEASURE: "validmeasure">
+  |  <VALUE: "value">
+  |  <VAR: "var">
+  |  <VARIANCE: "variance">
+  |  <VARIANCEP: "variancep">
+  |  <VARP: "varp">
+  |  <VISUAL: "visual">
+  |  <VISUALTOTALS: "visualtotals">
+  |  <WHEN: "when">
+  |  <WTD: "wtd">
+  |  <XOR: "xor">
+}
+
+/* keywords */
+TOKEN [IGNORE_CASE]: {
+		< SELECT : "select" >
+	|	< FROM : "from" >
+	|	< WHERE : "where" >
+	|	< WITH : "with" >
+    |   < CUBE : "cube" >
+	|	< MEMBER : "member" >
+    |   < DIMENSION : "dimension" >
+    |   < MEASURES : "measures" >
+    |   < ROLE : "role" >
+	|	< SET : "set" >
+	|	< AS : "as" >
+	|	< OR : "or" >
+	|	< AND : "and" >
+	|	< NOT : "not" >
+	|	< ON : "on" >
+	|	< COLUMNS : "COLUMNS" >   // axisIdx = 0
+	|	< ROWS : "rows" >         // axisIdx = 1
+	|	< PAGES : "PAGES" >       // axisIdx = 2
+	|	< CHAPTERS : "CHAPTERS" > // axisIdx = 3
+	|	< SECTIONS : "SECTIONS" > // axisIdx = 4
+    |   < SPACE : "space" >
+    |   < CREATE : "create" >
+    |   < BUILD : "Build" >
+    |   < UPDATE : "update" >
+    |   < DELETE : "DELETE" >
+    |   < INSERT : "INSERT" >
+    |   < MAX_MEMBER_LEVEL : "MAX_MEMBER_LEVEL" >
+    |   < LOAD_CUBE_DATA : "LOAD_CUBE_DATA" >
+    |   < SYNCHRONIZED : "synchronized" >
+    |   < SYNC : "sync" >
+    |   < WRITEBACK : "writeBack" >
+}
+
+/* command tool keywords */
+TOKEN [IGNORE_CASE]: {
+    < SEND_VCE_NODES : "@send_vce_nodes" >
+}
+
+/* function keywords */
+TOKEN [IGNORE_CASE]: {
+    // function option keywords
+    < ALL : "All" >
+
+    // Expression Functions
+	|	< COUNT : "Count" >
+	|		<INCLUDE_EMPTY : "Include_Empty" >
+	|		<EXCLUDE_EMPTY : "Exclude_Empty" >
+	|	< SUM : "Sum" >
+    |   < LOOK_UP_CUBE : "LookUpCube" >
+    |   < PROPERTIES : "properties" >
+    |   < IIF : "iif" >
+    |   < COALESCE_EMPTY : "CoalesceEmpty" >
+
+    // Member Functions
+	|	< CURRENT_MEMBER : "CurrentMember" >
+	|	< PARENT : "PARENT" >
+	|	< PREV_MEMBER : "PrevMember" >
+    |   < PARALLEL_PERIOD : "ParallelPeriod" >
+
+    // boolean functions
+    |   < IS_EMPTY : "IsEmpty" >
+
+    // Set Functions
+	|	< CROSS_JOIN : "CrossJoin" >
+	|	< MEMBERS : "Members" >
+    |   < FILTER : "filter" >
+    |   < CHILDREN : "Children" >
+    | 	< TOP_COUNT : "TopCount" >
+    |   < TAIL : "Tail" >
+    |   < YTD : "Ytd" >
+    |   < BOTTOM_PERCENT : "bottomPercent" >
+    |   < TOP_PERCENT : "topPercent" >
+    |   < UNION : "union" >
+    |   < INTERSECT : "Intersect" >
+    |   < EXCEPT : "EXCEPT" >
+	|	< LATERAL_MEMBERS : "LateralMembers" > // defined in Wormhole OLAP
+    |   < DESCENDANTS : "DESCENDANTS" >
+    |       < SELF : "SELF" >
+    |       < AFTER : "AFTER" >
+    |       < BEFORE : "BEFORE" >
+    |       < BEFORE_AND_AFTER : "BEFORE_AND_AFTER" >
+    |       < SELF_AND_AFTER : "SELF_AND_AFTER" >
+    |       < SELF_AND_BEFORE : "SELF_AND_BEFORE" >
+    |       < SELF_BEFORE_AFTER : "SELF_BEFORE_AFTER" >
+    |       < LEAVES : "LEAVES" >
+    | 	< ORDER : "ORDER" >
+    |       < ASC : "asc" >
+    |       < DESC : "desc" >
+    |       < BASC : "basc" >
+    |       < BDESC : "bdesc" >
+}
+
+/*
+ *   IDENTIFIER: variable name matches
+ * & SIMPLE_NUMERIC: simple digital format
+ * & ID_SELECTOR: id selector
+ */
+TOKEN: {
+		< # DIGIT : [ "0"-"9" ] >
+	|	< # LETTER : [ "_", "a"-"z", "A"-"Z" ] >
+	|	< SIMPLE_NUMERIC : ( <DIGIT> )+ ( "." ( <DIGIT> )+ )? >
+	| 	< IDENTIFIER : <LETTER> ( <LETTER> | <DIGIT> )* >
+	| 	< ID_SELECTOR : "&" ( <DIGIT> )+ >
+}
+
+/*
+ * STRING_LITERAL: string matchers
+ * CHARACTER_BLOCK:
+ */
+TOKEN: {
+		< STRING_LITERAL : "\"" ( ~[ "\"", "\n", "\r" ] )+ "\"" >
+	|	< CHARACTER_BLOCK : "[" ( ~[ "\n", "\r", "[", "]" ] )+ "]" >
+}
+
+/* Annotation */
+TOKEN [IGNORE_CASE]:
+{
+        < ANNOTATION_SET : "@set" >
+    |   < ANNOTATION_MEMBER : "@member" > // Has not been used
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/* parser entry */
+Object execute():
+{
+	SFPOfExecuteMDX sfp = null;
+	ContextAtExecutingMDX context;
+	MDDManagementAssistant mma = null;
+	Token tkn = null;
+	Object ___result_ = null;
+	Auxiliary_MDDL_NQ ___aux_ = null;
+}
+{
+	(
+		{ context = new ContextAtExecutingMDX(olapEngine); }
+		sfp = select_statement(context) // qt = select_statement(ec)
+        { context.set(sfp); ___result_ = sfp; }
+      |
+        LOOKAHEAD(20) ___aux_ = auxiliary_MDDL_NQ_statement() { ___result_ = ___aux_; }
+	  |
+	    { ___result_ = mma = new MDDManagementAssistant(); }
+	    [ <SEND_VCE_NODES> tkn = <STRING_LITERAL> { mma.readyConnectToVCENodes(peelShell(tkn.image)); } ]
+	    (
+	      (
+	        create_statement(mma) | build_statement(mma) |
+	        update_statement(mma) | delete_statement(mma) |
+	        insert_statement(mma) | loadCubeData_statement(mma)
+	      )
+	      ";"
+	    )+
+	)
+	<EOF>
+	{
+		// this.root = jjtThis;
+		return ___result_;
+	}
+}
+
+Auxiliary_MDDL_NQ auxiliary_MDDL_NQ_statement():
+{
+    Auxiliary_MDDL_NQ aux = new Auxiliary_MDDL_NQ();
+}
+{
+    (   LOOKAHEAD(20)  create_dimension_statement(aux)
+        |   LOOKAHEAD(20)  create_member_statement(aux)
+        |   LOOKAHEAD(20)  build_cube_statement(aux)
+        |   LOOKAHEAD(20)  sync_cube_statement(aux)
+        |   LOOKAHEAD(20)  writeback_cube_statement(aux)
+        |   LOOKAHEAD(20)  int_upt_del_measure_statement(aux)
+        |   LOOKAHEAD(20)  load_cube_data_statement(aux)
+    ) { return aux; }
+}
+
+void create_dimension_statement(Auxiliary_MDDL_NQ aux):
+{
+    Token tkn = null, lv_tkn = null;
+}
+{
+    <SPACE> "@" tkn = <CHARACTER_BLOCK> { aux.setSpace(peelShell(tkn.image)); }
+    (
+        <CREATE> <DIMENSION> tkn = <CHARACTER_BLOCK> <MAX_MEMBER_LEVEL> "=" lv_tkn = <SIMPLE_NUMERIC> ";"
+        { aux.add( new AuxCreateDimension(peelShell(tkn.image), lv_tkn.image) ); }
+    )+
+}
+
+void create_member_statement(Auxiliary_MDDL_NQ aux):
+{
+    Token tkn = null;
+    MultiDimensionalDomainSelector selector = null;
+}
+{
+    <SPACE> "@" tkn = <CHARACTER_BLOCK> { aux.setSpace(peelShell(tkn.image)); }
+    (
+        <CREATE> <MEMBER> selector = multi_dimensional_domain_select() ";"
+        { aux.add( new AuxCreateMember(selector) ); }
+    )+
+}
+
+void build_cube_statement(Auxiliary_MDDL_NQ aux):
+{
+    Token tkn = null, dm_tk = null, dr_tk = null, mea_tk = null;
+    List<AuxBuildCube.Dim__Role> drList = new ArrayList();
+    List<String> measures = new ArrayList();
+}
+{
+    <SPACE> "@" tkn = <CHARACTER_BLOCK> { aux.setSpace(peelShell(tkn.image)); }
+    (
+        <BUILD> <CUBE> tkn = <CHARACTER_BLOCK> "("
+            <DIMENSION> dm_tk = <CHARACTER_BLOCK> <ROLE> dr_tk = <CHARACTER_BLOCK>
+            { drList.add(new AuxBuildCube.Dim__Role(peelShell(dm_tk.image), peelShell(dr_tk.image))); }
+            (
+                "," <DIMENSION> dm_tk = <CHARACTER_BLOCK> <ROLE> dr_tk = <CHARACTER_BLOCK>
+                { drList.add(new AuxBuildCube.Dim__Role(peelShell(dm_tk.image), peelShell(dr_tk.image))); }
+            )*
+        ")" <MEASURES> "("
+            mea_tk = <CHARACTER_BLOCK> { measures.add(peelShell(mea_tk.image)); }
+            ( "," mea_tk = <CHARACTER_BLOCK> { measures.add(peelShell(mea_tk.image)); } )*
+        ")" ";"
+        { aux.add(new AuxBuildCube(peelShell(tkn.image), drList, measures)); }
+    )+
+}
+
+void sync_cube_statement(Auxiliary_MDDL_NQ aux):
+{
+    Token tkn = null;
+}
+{
+    <SEND_VCE_NODES> tkn = <STRING_LITERAL> { aux.setVCENodesInfo(peelShell(tkn.image)); }
+    <SPACE> "@" tkn = <CHARACTER_BLOCK> { aux.setSpace(peelShell(tkn.image)); }
+    (
+        ( <SYNCHRONIZED> | <SYNC> ) <CUBE> tkn = <CHARACTER_BLOCK> ";"
+        { aux.add(new AuxSyncCube(peelShell(tkn.image))); }
+    )+
+}
+
+void writeback_cube_statement(Auxiliary_MDDL_NQ aux):
+{
+    Token tkn = null;
+}
+{
+    <SEND_VCE_NODES> tkn = <STRING_LITERAL> { aux.setVCENodesInfo(peelShell(tkn.image)); }
+    <SPACE> "@" tkn = <CHARACTER_BLOCK> { aux.setSpace(peelShell(tkn.image)); }
+    (
+        <WRITEBACK> <CUBE> tkn = <CHARACTER_BLOCK> ";"
+        { aux.add(new AuxWriteBackCube(peelShell(tkn.image))); }
+    )+
+}
+
+void int_upt_del_measure_statement(Auxiliary_MDDL_NQ aux):
+{
+    Token tkn = null;
+    AuxCUDMeasure cudMea = null;
+}
+{
+    <SEND_VCE_NODES> tkn = <STRING_LITERAL> { aux.setVCENodesInfo(peelShell(tkn.image)); }
+    <SPACE> [ "@" ] tkn = <CHARACTER_BLOCK> { aux.setSpace(peelShell(tkn.image)); }
+    (
+        <INSERT> { aux.setAction(Auxiliary_MDDL_NQ.ActionEnum.INSERT); }
+      | <UPDATE> { aux.setAction(Auxiliary_MDDL_NQ.ActionEnum.UPDATE); }
+      | <DELETE> { aux.setAction(Auxiliary_MDDL_NQ.ActionEnum.DELETE); }
+    )
+    tkn = <CHARACTER_BLOCK> { aux.setCube(peelShell(tkn.image)); }
+    ( cudMea = CUD_measure_stat_V() { aux.add(cudMea); } ";" )+
+}
+
+AuxCUDMeasure CUD_measure_stat_V():
+{
+    MultiDimensionalDomainSelector mbr_sel = null;
+    List<MultiDimensionalDomainSelector> members = new ArrayList();
+    List<AuxCUDMeasure.MeasureInfo> measures = new ArrayList();
+    Token meaTk = null;
+    Double meaVal = null;
+}
+{
+    "(" mbr_sel = multi_dimensional_domain_select() { members.add(mbr_sel); }
+        ( "," mbr_sel = multi_dimensional_domain_select() { members.add(mbr_sel); } )*
+    ")" <MEASURES> "("
+        { meaVal = null; }
+        meaTk = <CHARACTER_BLOCK> [ "=" meaVal = signed_double_statement() ]
+        { measures.add(new AuxCUDMeasure.MeasureInfo(peelShell(meaTk.image), meaVal)); }
+        (
+            "," { meaVal = null; }
+            meaTk = <CHARACTER_BLOCK> [ "=" meaVal = signed_double_statement() ]
+            { measures.add(new AuxCUDMeasure.MeasureInfo(peelShell(meaTk.image), meaVal)); }
+        )*
+    ")" { return new AuxCUDMeasure(members, measures); }
+}
+
+void load_cube_data_statement(Auxiliary_MDDL_NQ aux):
+{
+    Token tkn = null;
+}
+{
+    <SEND_VCE_NODES> tkn = <STRING_LITERAL> { aux.setVCENodesInfo(peelShell(tkn.image)); }
+    <SPACE> "@" tkn = <CHARACTER_BLOCK> { aux.setSpace(peelShell(tkn.image)); }
+    (
+        <LOAD_CUBE_DATA> tkn =  <CHARACTER_BLOCK> ";"
+        { aux.add(new AuxLoadCubeData(peelShell(tkn.image))); }
+    )+
+}
+
+void create_statement(MDDManagementAssistant mma):
+{
+    MultiDimensionalDomainSelector.Part part, part2;
+    MultiDimensionalDomainSelector mdds;
+    Token tk;
+}
+{
+    <CREATE>
+    (
+        /* create space [SPACE] */
+        <SPACE> part = domain_selector_part()
+        { mma.readyToCreateSpace(part.getImage().trim()); }
+      |
+        /* create dimension [SPACE]@[DIMENSION] */
+        <DIMENSION> part = domain_selector_part() "@" part2 = domain_selector_part()
+            <MAX_MEMBER_LEVEL> "=" tk = <SIMPLE_NUMERIC>
+        {
+          mma.readyToCreateDimension(part.getImage().trim(), part2.getImage().trim(), Integer.parseInt(tk.image));
+        }
+      |
+        /* create member [SPACE]@[DIMENSION].[MEMBER].[MEMber].[member] */
+        <MEMBER> part = domain_selector_part() "@" mdds = multi_dimensional_domain_select()
+        { mma.readyToCreateMember(part.getImage().trim(), mdds); }
+    )
+}
+
+void loadCubeData_statement(MDDManagementAssistant mma):
+{
+    Token t = null;
+    ExeLoadCubeDataUnit u = null;
+}
+{
+    { u = new ExeLoadCubeDataUnit(); }
+    <LOAD_CUBE_DATA>
+    t = <STRING_LITERAL> { u.setSpaceName(peelShell(t.image)); }
+    t = <STRING_LITERAL> { u.setCubeName(peelShell(t.image)); mma.addExeUnit(u); }
+}
+
+void build_statement(MDDManagementAssistant mma):
+{
+    MultiDimensionalDomainSelector.Part part1, part2;
+}
+{
+    /*
+        build cube [SPACE]@[CUBE] (
+            dimension [DIMENSION] role [ROLE],
+            dimension [DIMENSION] role [ROLE],
+            dimension [DIMENSION] role [ROLE],
+        ) measures ([MeasureMember], [MeasureMember])
+    */
+    { ExeBuildCubeUnit exeUnit = new ExeBuildCubeUnit(); }
+    <BUILD> <CUBE> part1 = domain_selector_part() "@" part2 = domain_selector_part()
+    { exeUnit.setSpaceName(part1.getImage().trim()); exeUnit.setCubeName(part2.getImage().trim()); }
+    "("
+        <DIMENSION> part1 = domain_selector_part() <ROLE> part2 = domain_selector_part()
+        { exeUnit.addDimensionRoleMatcher(part1.getImage().trim(), part2.getImage().trim()); }
+        ( "," <DIMENSION> part1 = domain_selector_part() <ROLE> part2 = domain_selector_part()
+            { exeUnit.addDimensionRoleMatcher(part1.getImage().trim(), part2.getImage().trim()); }
+        )*
+    ")"
+    <MEASURES> "("
+        part1 = domain_selector_part() { exeUnit.addMeasureMember(part1.getImage().trim()); }
+        ( "," part1 = domain_selector_part() { exeUnit.addMeasureMember(part1.getImage().trim()); } )*
+    ")"
+    { mma.addExeUnit(exeUnit); }
+}
+
+void insert_statement(MDDManagementAssistant mma):
+{
+    MultiDimensionalDomainSelector.Part part;
+    MultiDimensionalDomainSelector mdds;
+    Token tkn;
+}
+{
+    /*
+        insert [SPACE]@[CUBE] (
+            [ROLE].[MMM].[MMm].[Mmm].[mmm],
+            [ROLE].[MMM].[MMm].[Mmm].[mmm],
+            [ROLE].[MMM].[MMm].[Mmm].[mmm]
+        ) measures ([MeasureMember] = 123.666, [MeasureMember] = 123.666)
+    */
+    { ExeInsertMeasuresUnit insUnit = new ExeInsertMeasuresUnit(); }
+    <INSERT> part = domain_selector_part() { insUnit.setSpaceName(part.getImage().trim()); }
+        "@" part = domain_selector_part() { insUnit.setCubeName(part.getImage().trim()); }
+    "("
+        mdds = multi_dimensional_domain_select() { insUnit.addMemberSelector(mdds); }
+        ( "," mdds = multi_dimensional_domain_select() { insUnit.addMemberSelector(mdds); } )*
+    ")" <MEASURES> "("
+        part = domain_selector_part() "=" tkn = <SIMPLE_NUMERIC>
+        { insUnit.insertMeasure(part.getImage().trim(), tkn.image); }
+        ( "," part = domain_selector_part() "=" tkn = <SIMPLE_NUMERIC> { insUnit.insertMeasure(part.getImage().trim(), tkn.image); } )*
+    ")"
+    { mma.addExeUnit(insUnit); }
+}
+
+void update_statement(MDDManagementAssistant mma):
+{
+    MultiDimensionalDomainSelector.Part part;
+    MultiDimensionalDomainSelector mdds;
+    Token tkn;
+}
+{
+    /*
+        update [SPACE]@[CUBE] (
+            [ROLE].[MMM].[MMm].[Mmm].[mmm],
+            [ROLE].[MMM].[MMm].[Mmm].[mmm],
+            [ROLE].[MMM].[MMm].[Mmm].[mmm]
+        ) measures ([MeasureMember] = 123.666, [MeasureMember] = 123.666)
+    */
+    { ExeUpdateMeasuresUnit exeUnit = new ExeUpdateMeasuresUnit(); }
+    <UPDATE> part = domain_selector_part() { exeUnit.setSpaceName(part.getImage().trim()); }
+        "@" part = domain_selector_part() { exeUnit.setCubeName(part.getImage().trim()); }
+    "("
+        mdds = multi_dimensional_domain_select() { exeUnit.addMemberSelector(mdds); }
+        ( "," mdds = multi_dimensional_domain_select() { exeUnit.addMemberSelector(mdds); } )*
+    ")" <MEASURES> "("
+        part = domain_selector_part() "=" tkn = <SIMPLE_NUMERIC>
+        { exeUnit.updateMeasure(part.getImage().trim(), tkn.image); }
+        ( "," part = domain_selector_part() "=" tkn = <SIMPLE_NUMERIC> { exeUnit.updateMeasure(part.getImage().trim(), tkn.image); } )*
+    ")"
+    { mma.addExeUnit(exeUnit); }
+}
+
+void delete_statement(MDDManagementAssistant mma):
+{
+    MultiDimensionalDomainSelector.Part part;
+    MultiDimensionalDomainSelector mdds;
+}
+{
+    /*
+        delete [SPACE]@[CCC] (
+            [RRR].[MMM].[MMm].[Mmm].[mmm],
+            [RRR].[MMM].[MMm].[Mmm].[mmm],
+            [RRR].[MMM].[MMm].[Mmm].[mmm]
+        ) measures ([MUU], [MUU], [MUU]);
+    */
+    { ExeDeleteMeasuresUnit exeUnit = new ExeDeleteMeasuresUnit(); }
+    <DELETE> part = domain_selector_part() { exeUnit.setSpaceName(part.getImage().trim()); }
+        "@" part = domain_selector_part() { exeUnit.setCubeName(part.getImage().trim()); }
+    "("
+        mdds = multi_dimensional_domain_select() { exeUnit.addMemberSelector(mdds); }
+        ( "," mdds = multi_dimensional_domain_select() { exeUnit.addMemberSelector(mdds); } )*
+    ")" <MEASURES> "("
+        part = domain_selector_part()
+        { exeUnit.deleteMeasure(part.getImage().trim()); }
+        ( "," part = domain_selector_part() { exeUnit.deleteMeasure(part.getImage().trim()); } )*
+    ")"
+    { mma.addExeUnit(exeUnit); }
+}
+
+MDXQueryResultSFP select_statement(ContextAtExecutingMDX ctx):
+{
+	List<WithFormula> withFormulaList = new ArrayList<WithFormula>();
+	Axis axis = null;
+	List<Axis> axisList = new ArrayList<Axis>();
+	CubePE cubePe = null;
+	WhereStatement whereStat = null; // ConditionLimitFragment whereFragment = null;
+}
+{
+	[ withFormulaList = with_statement_def(ctx) ]
+
+	/* one or more axies */
+	<SELECT>
+			  axis = axis_statement_def(ctx) { axisList.add(axis); }
+		( "," axis = axis_statement_def(ctx) { axisList.add(axis); } )*
+
+	<FROM> cubePe = cube(ctx) // { cm.contactToMDQLExecuteContext(ec); }
+
+	[ <WHERE> whereStat = where_statement_def(ctx) ]
+
+	{ return new MDXQueryResultSFP (ctx, withFormulaList, axisList, cubePe, whereStat); }
+
+}
+
+
+List<WithFormula> with_statement_def(ContextAtExecutingMDX ctx):
+{
+	List<WithFormula> formulaList = new ArrayList<WithFormula>();
+	WithFormula wf = null;
+}
+{
+	<WITH>
+	(
+	    ( wf = member_formula_statement(ctx) | wf = set_formula_statement(ctx) )
+	    { formulaList.add(wf); }
+	)+
+	{ return formulaList; }
+}
+
+SetFormula set_formula_statement(ContextAtExecutingMDX ctx):
+{
+	MultiDimensionalDomainSelector mdds = null; // CharacterBlocksToken rename to MultiDimensionalDomainSelector
+	SetPE setPe = null;
+}
+{
+	<SET> mdds = multi_dimensional_domain_select()
+	<AS> ( setPe = set(ctx) | "'" setPe = set(ctx) "'" )
+	{
+		return new SetFormula(mdds, setPe);
+	}
+}
+
+MemberFormula member_formula_statement(ContextAtExecutingMDX ctx):
+{
+	MultiDimensionalDomainSelector mbrMatch = null;
+	Expression exp = null;
+}
+{
+	<MEMBER> mbrMatch = multi_dimensional_domain_select()
+	<AS> ( exp = expression(ctx) | "'" exp = expression(ctx) "'" )
+	{
+		return new MemberFormula(mbrMatch, exp);
+	}
+}
+
+
+Expression expression(ContextAtExecutingMDX ctx):
+{
+	CommonExpression exp = new CommonExpression();
+	Term term = null;
+}
+{
+	term = term(ctx) { exp.addTerm("+", term); }
+	(		"+" term = term(ctx) { exp.addTerm("+", term); }
+		|
+			"-" term = term(ctx) { exp.addTerm("-", term); }
+	)*
+	{ return exp; }
+}
+
+Term term(ContextAtExecutingMDX ctx):
+{
+	Term term = new Term();
+	Factory factory = null;
+}
+{
+	factory = factory(ctx) { term.addFactory(null, factory); }
+	(	"*" factory = factory(ctx) { term.addFactory("*", factory); }
+	  |
+		"/" factory = factory(ctx) { term.addFactory("/", factory); }
+	  |
+		"%" factory = factory(ctx) { term.addFactory("%", factory); }
+	)*
+	{
+		return term;
+	}
+}
+
+
+Factory factory(ContextAtExecutingMDX ctx):
+{
+	Token tkn = null;
+	Token numTkn = null;
+	String numStr = null;
+	TuplePE tuplePe = null;
+	Expression exp = null;
+	ExpressionFunction fun = null;
+}
+{
+		[ tkn = "+" | tkn = "-" ] numTkn = <SIMPLE_NUMERIC> // numStr = numeric_value_spec()
+		{
+			return new Factory(ctx, (tkn == null ? "+" : tkn.image), /*numStr*/ numTkn.image);
+		}
+	|
+		tkn = <STRING_LITERAL>
+		{
+			return new Factory(ctx, peelShell(tkn.image));
+		}
+	|
+		LOOKAHEAD( tuple() ) // the LOOKAHEAD must Be placed at position at the beginning of production
+		tuplePe = tuple(ctx)
+		{
+			return new Factory(ctx, tuplePe);
+		}
+	|
+		"(" exp = expression(ctx) ")"
+		{
+			return new Factory(ctx, exp);
+		}
+	|
+		fun = common_functions(ctx) // evolved from numeric_functions()
+		{
+			return new Factory(ctx, fun);
+		}
+}
+
+// support calculact with string yet not only with numeric
+ExpressionFunction common_functions(ContextAtExecutingMDX ctx):
+{
+	SetPE setPe;
+	ExpFunCount.Option countOpt = null;
+	Expression exp = null;
+	Expression falseExp;
+	MemberPE memberPE;
+	BooleanExpression boolExp;
+}
+{
+		<COUNT> "(" setPe = set(ctx)
+					[ ","
+						( <EXCLUDE_EMPTY> { countOpt = ExpFunCount.Option.EXCLUDE_EMPTY; }
+					  |
+						  <INCLUDE_EMPTY> { countOpt = ExpFunCount.Option.INCLUDE_EMPTY; } )
+					]
+				")"
+		{
+			return new ExpFunCount(setPe, countOpt);
+		}
+	|
+		<SUM> "(" setPe = set(ctx) [ "," exp = expression(ctx) ] ")"
+		{
+			return new ExpFunSum(ctx, setPe, exp);
+		}
+	|
+	    {
+			CubePE cubePe;
+			TuplePE tuplePe;
+			ExpFnLookUpCube lookUpCube = new ExpFnLookUpCube(ctx);
+		}
+        <LOOK_UP_CUBE> "("
+            ( exp = expression(ctx) { lookUpCube.setCubeExp(exp); } | "!" cubePe = cube(ctx) { lookUpCube.setCubePE(cubePe); } )
+            "," [ "!" { lookUpCube.setParseExpFlag(false); } ] exp = expression(ctx) { lookUpCube.setExp(exp); }
+            [ "," ( exp = expression(ctx) { lookUpCube.setSpecifiedContextExp(exp); } | "!" tuplePe = tuple(ctx) { lookUpCube.setTuplePE(tuplePe); } ) ]
+        ")"
+		{
+			return lookUpCube;
+		}
+    |
+        // TODO: If support the ClassicMDDM production, great impact on the grammatical definition and program, realize later
+        <PROPERTIES> // currently, only support property that belong member
+            "(" memberPE = member(ctx) "," exp = expression(ctx) ")"
+        {
+            return new ExpFnProperties(ctx, memberPE, exp);
+        }
+    |
+        <IIF> "(" boolExp = boolean_expression(ctx) ","
+                 exp = expression(ctx) ","
+            falseExp = expression(ctx) ")"
+        {
+            return new ExpFnIIF(boolExp, exp, falseExp);
+        }
+    |
+        { List<Expression> expList = new LinkedList(); }
+        <COALESCE_EMPTY> "(" exp = expression(ctx) { expList.add(exp); } ( "," exp = expression(ctx) { expList.add(exp); } )+ ")"
+        {
+            return new ExpFnCoalesceEmpty(expList);
+        }
+}
+
+SetPE set(ContextAtExecutingMDX ctx):
+{
+	TuplePE tuplePe = null;
+	SetPE setPe = null;
+	List<SetPE> setPEs = new ArrayList<SetPE>();
+	SetFunction setFun = null;
+	MultiDimensionalDomainSelector customSetName;
+	MemberPE memberPE1;
+	MemberPE memberPE2;
+}
+{
+        LOOKAHEAD( member() ":" member() )
+            memberPE1 = member(ctx) ":" memberPE2 = member(ctx)
+        {
+            return new SetPE(ctx, memberPE1, memberPE2);
+        }
+	|
+		// use customized set
+		<ANNOTATION_SET> customSetName = multi_dimensional_domain_select()
+		{
+		    return new SetPE(ctx, customSetName);
+		}
+    |
+		tuplePe = tuple(ctx)
+		{
+			return new SetPE(ctx, tuplePe);
+		}
+	|
+		"{"
+			setPe = set(ctx) { setPEs.add(setPe); }
+			(
+				"," setPe = set(ctx) { setPEs.add(setPe); }
+			)*
+		"}"
+		{
+			return new SetPE(ctx, setPEs);
+		}
+	|
+		setFun = set_functions(ctx)
+		{
+			return new SetPE(ctx, setFun);
+		}
+}
+
+SetFunction set_functions(ContextAtExecutingMDX ctx):
+{
+	DimensionPE dimPe = null;
+	MemberPE mbrPe = null;
+	List<SetPE> setPEs;
+	SetPE setPE;
+	SetPE setPE2;
+	Expression exp = null;
+	Expression exp2;
+	BooleanExpression boolExp;
+	Token token = null;
+	LevelPE levelPE = null;
+}
+{
+        <MEMBERS> "(" dimPe = dimension(ctx) ")" // This function is not currently called on Hierarchy and Level
+        {
+            return new SetFunMembers(dimPe);
+        }
+	|
+	    <LATERAL_MEMBERS> "(" mbrPe = member(ctx) ")"
+	    {
+	        return new SetFunLateralMembers(mbrPe);
+	    }
+    |
+        { setPEs = new LinkedList(); }
+        <CROSS_JOIN> "(" setPE = set(ctx) { setPEs.add(setPE); }
+                            ( "," setPE = set(ctx) { setPEs.add(setPE); } )+
+                     ")"
+        {
+            return new SetFunCrossJoin(ctx, setPEs);
+        }
+    |
+        { String strategy = "ASC"; }
+        <ORDER> "("
+            setPE = set(ctx) "," exp = expression(ctx)
+            [ "," ( <ASC> | <DESC> { strategy = "DESC"; } | <BASC> { strategy = "BASC"; } | <BDESC> { strategy = "BDESC"; } ) ]
+        ")"
+        {
+            return new SetFnOrder(ctx, setPE, exp, strategy);
+        }
+    |
+        <FILTER> "(" setPE = set(ctx) "," boolExp = boolean_expression(ctx) ")"
+        {
+            return new SetFnFilter(setPE, boolExp);
+        }
+    |
+        <CHILDREN> "(" mbrPe = member(ctx) ")"
+        {
+            return new SetFnChildren(ctx, mbrPe);
+        }
+    |
+        { Expression countExp; }
+        <TOP_COUNT> "(" setPE = set(ctx) "," countExp = expression(ctx) [ "," exp = expression(ctx) ] ")"
+        {
+            return new SetFnTopCount(ctx, setPE, countExp, exp);
+        }
+    |
+        <EXCEPT> "(" setPE = set(ctx) "," setPE2 = set(ctx) [ "," token = <ALL> ] ")"
+        {
+            return new SetFnExcept(setPE, setPE2, token == null ? null : token.image);
+        }
+    |
+        <YTD> "(" [ mbrPe = member(ctx) ] ")"
+        {
+            return new SetFnYTD(ctx, mbrPe);
+        }
+    |
+        { SetFnDescendants.Option _option = null; }
+        <DESCENDANTS> "("
+                mbrPe = member(ctx) [ "," levelPE = level(ctx) ["," _option = descendants_options() ] ]
+            ")"
+        {
+            return new SetFnDescendants(ctx, mbrPe, levelPE, _option);
+        }
+    |
+        <TAIL> "(" setPE = set(ctx) [ "," exp = expression(ctx) ] ")"
+        {
+            return new SetFnTail(setPE, exp);
+        }
+    |
+        ( token = <BOTTOM_PERCENT> | token = <TOP_PERCENT> ) "("
+            setPE = set(ctx) "," exp2 = expression(ctx) "," exp = expression(ctx)
+        ")"
+        {
+            return new SetFnBottomOrTopPercent(ctx, token.image, setPE, exp2, exp);
+        }
+    |
+        { setPEs = new LinkedList(); }
+        <UNION> "("
+            setPE = set(ctx) { setPEs.add(setPE); } ( LOOKAHEAD( "," set() ) "," setPE = set(ctx) { setPEs.add(setPE); } )* [ "," token = <ALL> ]
+        ")"
+        {
+            return new SetFnUnion(ctx, setPEs, token != null);
+        }
+    |
+        { setPEs = new LinkedList(); }
+        <INTERSECT> "(" setPE = set(ctx) { setPEs.add(setPE); } ( LOOKAHEAD( "," set() ) "," setPE = set(ctx) { setPEs.add(setPE); } )* [ "," token = <ALL> ] ")"
+        { return new SetFnIntersect(ctx, setPEs, token != null); }
+}
+
+SetFnDescendants.Option descendants_options():
+{}
+{
+        <SELF>  { return SetFnDescendants.Option.SELF; }
+    |	<AFTER>  { return SetFnDescendants.Option.AFTER; }
+    |	<BEFORE> { return SetFnDescendants.Option.BEFORE; }
+    |	<BEFORE_AND_AFTER> { return SetFnDescendants.Option.BEFORE_AND_AFTER; }
+    |	<SELF_AND_AFTER> { return SetFnDescendants.Option.SELF_AND_AFTER; }
+    |	<SELF_AND_BEFORE> { return SetFnDescendants.Option.SELF_AND_BEFORE; }
+    |	<SELF_BEFORE_AFTER> { return SetFnDescendants.Option.SELF_BEFORE_AFTER; }
+    |	<LEAVES> { return SetFnDescendants.Option.LEAVES; }
+}
+
+
+// boolean expression(aka: logic expression)
+BooleanExpression boolean_expression(ContextAtExecutingMDX ctx):
+{
+    BooleanTerm boolTerm;
+    List<BooleanTerm> boolTermList = new LinkedList();
+}
+{
+    boolTerm = boolean_term(ctx) { boolTermList.add(boolTerm); }
+    (
+        <OR> boolTerm = boolean_term(ctx) { boolTermList.add(boolTerm); }
+    )*
+    {
+        return new BooleanExpression(boolTermList);
+    }
+}
+
+BooleanTerm boolean_term(ContextAtExecutingMDX ctx):
+{
+    BooleanFactory boolFactory;
+    List<BooleanFactory> boolFactoryList = new LinkedList();
+}
+{
+    boolFactory = boolean_factory(ctx) { boolFactoryList.add(boolFactory); }
+    (
+        <AND> boolFactory = boolean_factory(ctx) { boolFactoryList.add(boolFactory); }
+    )*
+    {
+        return new BooleanTerm(boolFactoryList);
+    }
+}
+
+BooleanFactory boolean_factory(ContextAtExecutingMDX ctx):
+{
+    BooleanFactory bf;
+    Expression leftExp;
+    Expression rightExp;
+    String lo; // logic operator string
+    BooleanExpression result;
+    BooleanFunction booleanFn;
+}
+{
+        <NOT> bf = boolean_factory(ctx) // the boolean factory 'NOT NOT NOT NOT 1 > 2' is legal
+        {
+            return new BooleanFactory(false, bf);
+        }
+    |
+        LOOKAHEAD( expression() ( ">" | ">=" | "<" | "<=" | "=" | "<>" ) expression() )
+        leftExp = expression(ctx)
+            (
+                  ">"  { lo = ">"; }
+                | ">=" { lo = ">="; }
+                | "<"  { lo = "<"; }
+                | "<=" { lo = "<="; }
+                | "="  { lo = "="; }
+                | "<>" { lo = "<>"; }
+            )
+        rightExp = expression(ctx)
+        {
+            return new BooleanFactory(leftExp, lo, rightExp);
+        }
+    |
+        "(" result = boolean_expression(ctx) ")"
+        {
+            return new BooleanFactory(result);
+        }
+    |
+        booleanFn = boolean_function(ctx)
+        {
+            return new BooleanFactory(booleanFn);
+        }
+}
+
+BooleanFunction boolean_function(ContextAtExecutingMDX ctx):
+{
+    Expression exp;
+}
+{
+    <IS_EMPTY> "(" exp = expression(ctx) ")"
+    {
+        return new BooleanFnIsEmpty(exp);
+    }
+}
+
+LevelPE level(ContextAtExecutingMDX ctx):
+{
+    MultiDimensionalDomainSelector selector;
+}
+{
+    selector = multi_dimensional_domain_select()
+    {
+        return new LevelPE(ctx, selector);
+    }
+//  |
+//  	level_functions() // TODO: Seems not necessary
+}
+
+TuplePE tuple(ContextAtExecutingMDX ctx):
+{
+	List<MemberPE> mbrPEs = new ArrayList<MemberPE>();
+	MemberPE mbrPe = null;
+}
+{
+		mbrPe = member(ctx)
+		{
+			return new TuplePE(mbrPe);
+		}
+	|
+		"("
+				mbrPe = member(ctx) { mbrPEs.add(mbrPe); }
+  		   ("," mbrPe = member(ctx) { mbrPEs.add(mbrPe); } )*
+		")"
+	  	{
+			return new TuplePE(mbrPEs);
+	  	}
+}
+
+
+MemberPE member(ContextAtExecutingMDX ctx):
+{
+	MultiDimensionalDomainSelector mbrTrail = null;
+	MemberFunction memberFun = null;
+}
+{
+		mbrTrail = multi_dimensional_domain_select()
+		{
+			return new MemberPE(ctx, mbrTrail);
+		}
+	|
+		memberFun = member_functions(ctx)
+		{
+			return new MemberPE(ctx, memberFun);
+		}
+}
+
+
+MemberFunction member_functions(ContextAtExecutingMDX ctx):
+{
+	DimensionPE dimPe;
+	MemberPE mbrPe = null;
+	LevelPE levelPE = null;
+    Expression exp = null;
+}
+{
+		<CURRENT_MEMBER> "(" dimPe = dimension(ctx) ")"
+		{
+			return new MemberFunCurrentMember(dimPe);
+		}
+	|
+		<PARENT>  "(" mbrPe = member(ctx) ")"
+		{
+			return new MemberFunParent(mbrPe);
+		}
+    |
+        <PREV_MEMBER> "(" mbrPe = member(ctx) ")"
+        {
+            return new MemberFunPrevMember(mbrPe);
+        }
+    |
+        <PARALLEL_PERIOD>
+            "(" [ levelPE = level(ctx)
+                    [ "," exp = expression(ctx)
+                        [ "," mbrPe = member(ctx) ] ] ]
+            ")"
+        {
+            return new MemberFnParallelPeriod(ctx, levelPE, exp, mbrPe);
+        }
+}
+
+DimensionPE dimension(ContextAtExecutingMDX ctx):
+{
+	MultiDimensionalDomainSelector mdds = null;
+}
+{
+	mdds = multi_dimensional_domain_select()
+  	{
+		return new DimensionPE(ctx, mdds);
+  	}
+}
+
+
+Axis axis_statement_def(ContextAtExecutingMDX ctx):
+{
+	SetPE setPe = null;
+//	Axis.CoordinatePosition coordPosition = null;
+	Token tk = null;
+	String axisAlias = null;
+}
+{
+	setPe = set(ctx)
+		<ON>
+	(
+			tk = <SIMPLE_NUMERIC>
+			{
+				return new Axis(Integer.parseInt(tk.image), setPe);
+			}
+		|
+			axisAlias = axis_alias()
+			{
+				return new Axis(axisAlias, setPe);
+			}
+	)
+}
+
+String axis_alias():
+{
+	Token tk = null;
+}
+{
+	( tk = <COLUMNS> | tk = <ROWS> | tk = <PAGES> | tk = <CHAPTERS> | tk = <SECTIONS> )
+	{
+		// return peelShell(tk.image);
+		return tk.image;
+	}
+}
+
+
+WhereStatement where_statement_def(ContextAtExecutingMDX ctx):
+{
+	TuplePE tp = null;
+}
+{
+	tp = tuple(ctx)
+	{
+		return new WhereStatement(tp);
+	}
+}
+
+
+CubePE cube(ContextAtExecutingMDX ctx):
+{
+	MultiDimensionalDomainSelector mdds = null;
+}
+{
+	mdds = multi_dimensional_domain_select()
+	{
+		return new CubePE(ctx, mdds);
+	}
+//  | cube_functions() // TODO: cube function ?
+}
+
+MultiDimensionalDomainSelector multi_dimensional_domain_select():
+{
+	MultiDimensionalDomainSelector mdds = new MultiDimensionalDomainSelector();
+	MultiDimensionalDomainSelector.Part part = null;
+}
+{
+	part = domain_selector_part() { mdds.append(part); }
+	( "." part = domain_selector_part() { mdds.append(part); } )*
+	{
+		return mdds;
+	}
+}
+
+MultiDimensionalDomainSelector.Part domain_selector_part():
+{
+	Token idSelector = null;
+	Token variable = null;
+	Token charBlk = null;
+}
+{
+	idSelector = <ID_SELECTOR>
+	[ variable = <IDENTIFIER> | charBlk = <CHARACTER_BLOCK> ]
+	{
+        return new MultiDimensionalDomainSelector.Part
+                        (idSelector.image.substring(1), variable != null ? variable.image : (charBlk == null ? null : peelShell(charBlk.image)));
+	}
+  |
+	( variable = <IDENTIFIER> | charBlk = <CHARACTER_BLOCK> )
+	{
+        return new MultiDimensionalDomainSelector.Part
+                        (null, variable != null ? variable.image : peelShell(charBlk.image));
+	}
+}
+
+Double signed_double_statement():
+{
+    String sign = null;
+    Token valTkn = null;
+}
+{
+    [ "+" { sign = "+"; } | "-" { sign = "-"; } ] valTkn = <SIMPLE_NUMERIC>
+    { return "-".equals(sign) ? (0 - Double.parseDouble(valTkn.image)) : Double.parseDouble(valTkn.image); }
+}
