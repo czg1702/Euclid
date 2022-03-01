@@ -3,6 +3,7 @@
 
 #include "utils.h"
 #include "command.h"
+#include "mdx.h"
 
 #define MD_ENTITY_NAME_BYTSZ 62
 
@@ -70,5 +71,8 @@ void *gen_member_gid_abs_path(Cube *cube, ArrayList *mbr_path_str);
 int store_measure(EuclidCommand *ec);
 
 int distribute_store_measure(EuclidCommand *ec);
+
+// TODO should be return a multi-dim-result
+void *exe_multi_dim_queries(SelectDef *);
 
 #endif

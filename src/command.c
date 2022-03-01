@@ -183,8 +183,14 @@ static int execute_command(EuclidCommand *ec)
 			char *cube_name;
 			stack_pop(&YC_STC, (void **)&ls_vms);
 			stack_pop(&YC_STC, (void **)&cube_name);
-			printf("IDS_CXOBJ_ISRTCUBEMEARS - %s - %s\n", cube_name, ls_vms->desc);
+			printf("[debug] IDS_CXOBJ_ISRTCUBEMEARS - %s - %s\n", cube_name, ls_vms->desc);
 			insert_cube_measure_vals(cube_name, ls_vms);
+		}
+		else if (ids_type == IDS_MULTI_DIM_SELECT_DEF)
+		{
+			SelectDef *select_def;
+			stack_pop(&YC_STC, (void **)&select_def);
+			exe_multi_dim_queries(select_def); // TODO should be return a multi-dim-result
 		}
 	}
 	return 0;

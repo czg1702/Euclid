@@ -405,3 +405,8 @@ void *gen_member_gid_abs_path(Cube *cube, ArrayList *mbr_path_str)
 
 	return abs_path;
 }
+
+void *exe_multi_dim_queries(SelectDef *select_def)
+{
+	return NULL; // TODO should be return a multi-dim-result
+}

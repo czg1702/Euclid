@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 			strncat(statement, " ", 1);
 	}
 
-	printf("statement [%s]\n", statement);
+	printf("<<<<<<\n%s\n>>>>>>\n", statement);
 
 	// parse_mdx(statement);
 

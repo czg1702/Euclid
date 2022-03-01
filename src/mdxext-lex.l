@@ -47,6 +47,18 @@ insert	{
 	return INSERT;
 }
 
+select	{
+	return SELECT;
+}
+
+from	{
+	return FROM;
+}
+
+on	{
+	return ON;
+}
+
 [_a-zA-Z][_a-zA-Z0-9]*	{
 	//printf("-------> token yytext[%s] yyleng[%d]\n", yytext, yyleng);
 	return VAR;
@@ -73,6 +85,14 @@ insert	{
 
 ")"	{
 	return ROUND_BRACKET_R;
+}
+
+"{" {
+	return BRACE_L;
+}
+
+"}" {
+	return BRACE_R;
 }
 
 \x5B[^\x5B\x5D]+\x5D	{
