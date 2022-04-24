@@ -31,7 +31,7 @@ int vce_append(EuclidCommand *ec)
     __uint32_t axes_count = *((__uint32_t *)slide_over_mem(data, sizeof(__uint32_t), &i));
     __uint32_t vals_count = *((__uint32_t *)slide_over_mem(data, sizeof(__uint32_t), &i));
 
-    printf("cs_id %lu, axes_count %ld, vals_count %ld\n", cs_id, axes_count, vals_count);
+    // printf("cs_id %lu, axes_count %ld, vals_count %ld\n", cs_id, axes_count, vals_count);
 
     CoordinateSystem *cs;
     int j, csz = als_size(coor_sys_ls);

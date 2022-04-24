@@ -22,7 +22,7 @@ Dimension *create_dimension(char *dim_name)
 {
 	if (strlen(dim_name) >= MD_ENTITY_NAME_BYTSZ)
 	{
-		printf("WARN - dim name too long <%s>\n", dim_name);
+		printf("[WARN] - dim name too long <%s>\n", dim_name);
 		return NULL;
 	}
 
