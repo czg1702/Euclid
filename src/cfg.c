@@ -14,29 +14,29 @@ static int set_param(char *p_key, char *p_val);
 static int load_conf_files();
 
 int init_cfg(int argc, char *argv[])
-{
-	memset(&cfg, 0, sizeof(cfg));
-
-	// hard-coded default values
-	cfg.mode = MASTER_MODE;
-	cfg.port = 8760;
-	cfg.ec_threads_count = 1;
-	cfg.program_path = argv[0];
-
-	// values of configuration file
-	load_conf_files();
-
-	// program parameter values
-	int i;
-	for (i = 1; i < argc; i++)
-	{
-		fetch_param(argv[i]);
-	}
-
-	printf("info - node mode [ %c ]\n", cfg.mode);
-
-	return 0;
-}
+/*@@*/{
+/*@@*/	memset(&cfg, 0, sizeof(cfg));
+/*@@*/
+/*@@*/	// hard-coded default values
+/*@@*/	cfg.mode = MASTER_MODE;
+/*@@*/	cfg.port = 8760;
+/*@@*/	cfg.ec_threads_count = 1;
+/*@@*/	cfg.program_path = argv[0];
+/*@@*/
+/*@@*/	// values of configuration file
+/*@@*/	load_conf_files();
+/*@@*/
+/*@@*/	// program parameter values
+/*@@*/	int i;
+/*@@*/	for (i = 1; i < argc; i++)
+/*@@*/	{
+/*@@*/		fetch_param(argv[i]);
+/*@@*/	}
+/*@@*/
+/*@@*/	printf("info - node mode [ %c ]\n", cfg.mode);
+/*@@*/
+/*@@*/	return 0;
+/*@@*/}
 
 int fetch_param(char *param)
 {

@@ -20,14 +20,24 @@ typedef struct _stct_dim_
 	char name[MD_ENTITY_NAME_BYTSZ];
 } Dimension;
 
+#define MDD_MEMBER__BIN_ATTR_FLAG__NON_LEAF 1
+
 typedef struct _stct_mbr_
 {
 	char name[MD_ENTITY_NAME_BYTSZ];
-	unsigned short lv;
 	md_gid gid;
 	md_gid p_gid;
 	md_gid dim_gid;
+	unsigned short lv;
+
+	// Each binary bit represents an attribute switch.
+	// lowest bit, 0 - leaf member, 1 - non-leaf member.
+	int bin_attr;
 } Member;
+
+int mdd_mbr__is_leaf(Member *);
+
+void mdd_mbr__set_as_leaf(Member *);
 
 int create_dims(ArrayList *dim_names);
 
@@ -74,5 +84,56 @@ int distribute_store_measure(EuclidCommand *ec);
 
 // TODO should be return a multi-dim-result
 void *exe_multi_dim_queries(SelectDef *);
+
+typedef struct mdd_tuple
+{
+	ArrayList *mr_ls;
+} MddTuple;
+
+MddTuple *mdd_tp__create();
+
+typedef struct mdd_set
+{
+	ArrayList *tuples;
+} MddSet;
+
+typedef struct mdd_axis
+{
+	MddSet *set;
+	unsigned short posi;
+} MddAxis;
+
+typedef struct mdd_mbr_role
+{
+	Member *member;
+	DimensionRole *dim_role;
+} MddMemberRole;
+
+/**
+ * When the DimensionRole parameter is empty, it indicates the measure member role.
+ */
+MddMemberRole *mdd_mr__create(Member *, DimensionRole *);
+
+MddSet *mdd_set__create();
+
+MddAxis *mdd_ax__create();
+
+void mdd_tp__add_mbrole(MddTuple *, MddMemberRole *);
+
+MddTuple *ids_setdef__head_ref_tuple(SetDef *set_def, MddTuple *context_tuple, Cube *cube);
+
+MddMemberRole *ids_mbrsdef__build(MemberDef *m_def, MddTuple *context_tuple, Cube *cube);
+
+DimensionRole *cube__dim_role(Cube *cube, char *dim_role_name);
+
+Member *dim__find_mbr(Dimension *dim, ArrayList *mbr_name_path);
+
+MddSet *ids_setdef__build(SetDef *set_def, MddTuple *ctx_tuple, Cube *cube);
+
+void mddset__add_tuple(MddSet *, MddTuple *);
+
+MddTuple *mdd_ax__get_tuple(MddAxis *, int);
+
+MddTuple *_MddTuple__mergeTuples(MddTuple **tps, int count);
 
 #endif

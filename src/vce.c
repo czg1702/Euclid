@@ -348,7 +348,7 @@ __uint64_t cs_axis_span(CoordinateSystem *cs, int axis_order)
 
 void space_add_measure(MeasureSpace *space, __uint64_t measure_position, void *cell)
 {
-    // printf("[DEBUG] space_add_measure ()    %lu\n", *((unsigned long *)cell));
+    // // printf("[debug] space_add_measure ()    %lu\n", *((unsigned long *)cell));
     rbt_add(space->tree_ls_h[measure_position / space->segment_scope], cell);
 }
 

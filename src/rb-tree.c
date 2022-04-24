@@ -177,7 +177,7 @@ static void _rbt__scan_nodes_do(RBNode *n, void *callback_param, void *(*callbac
 
 void rbt__scan_do(RedBlackTree *t, void *callback_param, void *(*callback)(RBNode *node, void *param))
 {
-	// printf("[DEBUG] rbt__scan_do - rbt__size(t) = %d\n", rbt__size(t));
+	// // printf("[debug] rbt__scan_do - rbt__size(t) = %d\n", rbt__size(t));
 	if (t->root)
 		_rbt__scan_nodes_do(t->root, callback_param, callback);
 }
