@@ -468,7 +468,8 @@ void *exe_multi_dim_queries(SelectDef *select_def)
 		offset_arr[i] = offset_arr[i + 1] * mdd_ax__len(als_get(axes, i + 1));
 
 	// MddTuple *tuples_matrix[rs_len][als_size(axes)];
-	MddTuple **tuples_matrix_h = mem_alloc_0(rs_len * x_size);
+	// MddTuple **tuples_matrix_h = mem_alloc_0(rs_len * x_size);
+	MddTuple **tuples_matrix_h = mem_alloc_0(rs_len * x_size * sizeof(void *));
 
 	int matx_col, matx_row, f;
 	for (matx_col = 0; matx_col < x_size; matx_col++)
