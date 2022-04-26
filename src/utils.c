@@ -19,7 +19,7 @@ void *mem_alloc_0(size_t size)
 {
 	// // pthread_mutex_lock(&mutex_AAA);
 
-	// // // printf("[debug] ()()()()()<><><><><> mem_alloc_0% 20lu% 20lu\n", mem_p, size);
+	// // // // printf("[debug] ()()()()()<><><><><> mem_alloc_0% 20lu% 20lu\n", mem_p, size);
 	// if (static_mem == NULL) {
 	// 	unsigned int m128 = 1024 * 1024 * 128;
 	// 	static_mem = malloc(m128);
@@ -58,7 +58,7 @@ void *mem_alloc_0(size_t size)
 
 	// return mem;
 
-	// printf("[debug] >>>------------------------mem_alloc_0 << %lu >> times --------------------------> mem_alloc_0( %lu )\n", ++mem_all_times, size);
+	// // printf("[debug] >>>------------------------mem_alloc_0 << %lu >> times --------------------------> mem_alloc_0( %lu )\n", ++mem_all_times, size);
 	void *addr = malloc(size);
 	memset(addr, 0, size);
 	return addr;
@@ -341,7 +341,7 @@ int append_file_uint(char *file_path, __uint32_t val)
 ArrayList *als_create(unsigned int init_capacity, char *desc)
 {
 	ArrayList *als = (ArrayList *)mem_alloc_0(sizeof(ArrayList));
-	printf("[debug] 新建 ArrayList  ---------------  % 12u% 12u\n",als->idx,als->ele_arr_capacity);
+	// printf("[debug] 新建 ArrayList  ---------------  % 12u% 12u\n",als->idx,als->ele_arr_capacity);
 	als->ele_arr_capacity = init_capacity;
 	als->elements_arr_p = mem_alloc_0(sizeof(void *) * init_capacity);
 	if (desc != NULL)
@@ -359,11 +359,11 @@ int als_add(ArrayList *als, void *obj)
 	if (als == NULL)
 		return -1;
 
-	// printf("[debug] KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK% 20u% 20u\n", als->idx, als->ele_arr_capacity);
+	// // printf("[debug] KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK% 20u% 20u\n", als->idx, als->ele_arr_capacity);
 
 	if (als->idx >= als->ele_arr_capacity)
 	{
-		// printf("[debug] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  %p  < %u >  < %u >\n", als, als->idx, als->ele_arr_capacity);
+		// // printf("[debug] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  %p  < %u >  < %u >\n", als, als->idx, als->ele_arr_capacity);
 		als->ele_arr_capacity *= 2;
 		void **new_ele_arr_p = mem_alloc_0(sizeof(void *) * (als->ele_arr_capacity));
 		memcpy(new_ele_arr_p, als->elements_arr_p, als->idx * sizeof(void *));

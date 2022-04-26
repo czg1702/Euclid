@@ -183,7 +183,7 @@ static int execute_command(EuclidCommand *ec)
 			char *cube_name;
 			stack_pop(&YC_STC, (void **)&ls_vms);
 			stack_pop(&YC_STC, (void **)&cube_name);
-			// // printf("[debug] IDS_CXOBJ_ISRTCUBEMEARS - %s - %s\n", cube_name, ls_vms->desc);
+			// // // printf("[debug] IDS_CXOBJ_ISRTCUBEMEARS - %s - %s\n", cube_name, ls_vms->desc);
 			insert_cube_measure_vals(cube_name, ls_vms);
 		}
 		else if (ids_type == IDS_MULTI_DIM_SELECT_DEF)

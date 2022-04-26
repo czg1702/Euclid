@@ -61,14 +61,14 @@ statement:
 		printf("stack_push(&YC_STC, IDS_CXOBJ_ISRTCUBEMEARS);\n");
 	}
   | multi_dim_query {
-	  	// printf("[debug] yacc - statement ::= multi_dim_query\n");
+	  	// // printf("[debug] yacc - statement ::= multi_dim_query\n");
 		stack_push(&YC_STC, IDS_MULTI_DIM_SELECT_DEF);
   }
 ;
 
 multi_dim_query:
 	SELECT axes_statement FROM cube__statement {
-	  	// printf("[debug] yacc - multi_dim_query ::= SELECT axes_statement FROM cube__statement\n");
+	  	// // printf("[debug] yacc - multi_dim_query ::= SELECT axes_statement FROM cube__statement\n");
 		CubeDef *cube_def;
 		stack_pop(&YC_STC, (void **) &cube_def);
 		ArrayList *ax_def_ls;
@@ -80,7 +80,7 @@ multi_dim_query:
 
 cube__statement:
 	var_or_block {
-	  	// printf("[debug] yacc - cube__statement ::= var_or_block\n");
+	  	// // printf("[debug] yacc - cube__statement ::= var_or_block\n");
 		char *cube_name;
 		stack_pop(&YC_STC, (void **) &cube_name);
 		CubeDef *cube_def = ids_cubedef_new(cube_name);
@@ -90,7 +90,7 @@ cube__statement:
 
 axes_statement:
 	axis_statement {
-	  	// printf("[debug] yacc - axes_statement ::= axis_statement\n");
+	  	// // printf("[debug] yacc - axes_statement ::= axis_statement\n");
 		AxisDef *ax_def;
 		stack_pop(&YC_STC, (void **) &ax_def);
 		ArrayList *ax_def_ls = als_create(32, "AxisDef *");
@@ -98,7 +98,7 @@ axes_statement:
 		stack_push(&YC_STC, ax_def_ls);
 	}
   | axes_statement COMMA axis_statement {
-	  	// printf("[debug] yacc - axes_statement ::= axes_statement COMMA axis_statement\n");
+	  	// // printf("[debug] yacc - axes_statement ::= axes_statement COMMA axis_statement\n");
 		AxisDef *ax_def;
 		stack_pop(&YC_STC, (void **) &ax_def);
 		ArrayList *ax_def_ls;
@@ -110,7 +110,7 @@ axes_statement:
 
 axis_statement:
 	set_statement ON DECIMAL {
-	  	// printf("[debug] yacc - axis_statement ::= set_statement ON DECIMAL\n");
+	  	// // printf("[debug] yacc - axis_statement ::= set_statement ON DECIMAL\n");
 		SetDef *set_def;
 		stack_pop(&YC_STC, (void **) &set_def);
 		AxisDef *axis_def = ids_axisdef_new(set_def, atoi(yytext));
@@ -120,7 +120,7 @@ axis_statement:
 
 set_statement:
 	BRACE_L tuples_statement BRACE_R {
-	  	// printf("[debug] yacc - set_statement ::= BRACE_L tuples_statement BRACE_R\n");
+	  	// // printf("[debug] yacc - set_statement ::= BRACE_L tuples_statement BRACE_R\n");
 		ArrayList *t_def_ls;
 		stack_pop(&YC_STC, (void **) &t_def_ls);
 		SetDef *set_def = ids_setdef_new(SET_DEF__TUP_DEF_LS);
@@ -131,7 +131,7 @@ set_statement:
 
 tuples_statement:
 	tuple_statement {
-	  	// printf("[debug] yacc - tuples_statement ::= tuple_statement\n");
+	  	// // printf("[debug] yacc - tuples_statement ::= tuple_statement\n");
 		TupleDef *t_def;
 		stack_pop(&YC_STC, (void **) &t_def);
 		ArrayList *t_def_ls = als_create(32, "TupleDef *");
@@ -139,7 +139,7 @@ tuples_statement:
 		stack_push(&YC_STC, t_def_ls);
 	}
   | tuples_statement COMMA tuple_statement {
-	  	// printf("[debug] yacc - tuples_statement ::= tuples_statement COMMA tuple_statement\n");
+	  	// // printf("[debug] yacc - tuples_statement ::= tuples_statement COMMA tuple_statement\n");
 		TupleDef *t_def;
 		stack_pop(&YC_STC, (void **) &t_def);
 		ArrayList *t_def_ls;
@@ -151,7 +151,7 @@ tuples_statement:
 
 tuple_statement:
 	ROUND_BRACKET_L mbrs_statement ROUND_BRACKET_R {
-	  	// printf("[debug] yacc - tuple_statement ::= ROUND_BRACKET_L mbrs_statement ROUND_BRACKET_R\n");
+	  	// // printf("[debug] yacc - tuple_statement ::= ROUND_BRACKET_L mbrs_statement ROUND_BRACKET_R\n");
 		MembersDef *ms_def;
 		stack_pop(&YC_STC, (void **) &ms_def);
 		TupleDef *t_def = ids_tupledef_new(TUPLE_DEF__MBRS_DEF);
@@ -162,7 +162,7 @@ tuple_statement:
 
 mbrs_statement:
 	member_statement {
-	  	// printf("[debug] yacc - mbrs_statement ::= member_statement\n");
+	  	// // printf("[debug] yacc - mbrs_statement ::= member_statement\n");
 		MemberDef *mbr_def;
 		stack_pop(&YC_STC, (void **) &mbr_def);
 		MembersDef *ms_def = ids_mbrsdef_new(MBRS_DEF__MBR_DEF_LS);
@@ -170,7 +170,7 @@ mbrs_statement:
 		stack_push(&YC_STC, ms_def);
 	}
   | mbrs_statement COMMA member_statement {
-	  	// printf("[debug] yacc - mbrs_statement ::= mbrs_statement COMMA member_statement\n");
+	  	// // printf("[debug] yacc - mbrs_statement ::= mbrs_statement COMMA member_statement\n");
 		MemberDef *mbr_def;
 		stack_pop(&YC_STC, (void **) &mbr_def);
 		MembersDef *ms_def;
@@ -182,7 +182,7 @@ mbrs_statement:
 
 member_statement:
 	member_absolute_path {
-		// printf("[debug] yacc - member_statement ::= member_absolute_path\n");
+		// // printf("[debug] yacc - member_statement ::= member_absolute_path\n");
 		ArrayList *mbr_abs_path;
 		stack_pop(&YC_STC, (void **) &mbr_abs_path);
 		MemberDef *mbr_def = ids_mbrdef_new__mbr_abs_path(mbr_abs_path);

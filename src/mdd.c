@@ -86,7 +86,7 @@ md_gid gen_md_gid()
 Member *create_member(ArrayList *mbr_path)
 {
 	unsigned int sz = als_size(mbr_path);
-	// printf("[debug] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----------------------------- sz = %u\n", sz);
+	// // printf("[debug] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----------------------------- sz = %u\n", sz);
 	int i = 0;
 	int new_leaf_mbr_lv = sz - 1;
 
@@ -100,7 +100,7 @@ Member *create_member(ArrayList *mbr_path)
 		mbr_lv1 = _create_member_lv1(dim, als_get(mbr_path, 1));
 		// if (mdd_mbr__level(mbr_lv1) > new_leaf_mbr_lv)
 		// 	mdd_mbr__set_as_leaf(mbr_lv1);
-		// printf("[debug] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@% 32s    level = %d\n", mbr_lv1->name, mbr_lv1->lv);
+		// // printf("[debug] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@% 32s    level = %d\n", mbr_lv1->name, mbr_lv1->lv);
 		append_file_data(META_DEF_MBRS_FILE_PATH, (char *)mbr_lv1, sizeof(Member));
 
 		als_add(mbrs_pool, mbr_lv1);
@@ -120,7 +120,7 @@ Member *create_member(ArrayList *mbr_path)
 		if (m == NULL)
 		{
 			m = _create_member_child(p_m, als_get(mbr_path, i));
-			// printf("[debug] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@% 32s    level = %d\n", m->name, m->lv);
+			// // printf("[debug] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@% 32s    level = %d\n", m->name, m->lv);
 			append_file_data(META_DEF_MBRS_FILE_PATH, (char *)m, sizeof(Member));
 			als_add(mbrs_pool, m);
 		}
@@ -454,7 +454,7 @@ void *exe_multi_dim_queries(SelectDef *select_def)
 		// printf("@@@@@@@-----@@@@@@@-----@@@@@@@-----@@@@@@@-----@@@@@@@----->>>>  %u\n", _len);
 		rs_len *= mdd_ax__len(ax);
 	}
-	// printf("[debug] multi-dimensional result length < %lu >\n", rs_len);
+	// // printf("[debug] multi-dimensional result length < %lu >\n", rs_len);
 
 	// !!! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	
@@ -538,7 +538,7 @@ void *exe_multi_dim_queries(SelectDef *select_def)
 static ArrayList *select_def__build_axes(SelectDef *select_def)
 {
 	ArrayList *ax_def_ls = select_def->ax_def_ls;
-	// printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ArrayList *ax_def_ls desc \"%s\"\n", ax_def_ls->desc);
+	// // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ArrayList *ax_def_ls desc \"%s\"\n", ax_def_ls->desc);
 	Cube *cube = select_def__get_cube(select_def);
 	MddTuple *ref_tuple = cube__basic_ref_vector(cube);
 	int ax_count = als_size(ax_def_ls);
@@ -550,7 +550,7 @@ static ArrayList *select_def__build_axes(SelectDef *select_def)
 			AxisDef *ax_def = als_get(ax_def_ls, j);
 			MddTuple *ax_head_ref_tuple = ax_def__head_ref_tuple(ax_def, ref_tuple, cube);
 
-			// printf("[debug] <><><><><><><><><><><><><>      ax_head_ref_tuple [ %p ] ax_head_ref_tuple->mr_ls [ %p ]\n", ax_head_ref_tuple, ax_head_ref_tuple->mr_ls);
+			// // printf("[debug] <><><><><><><><><><><><><>      ax_head_ref_tuple [ %p ] ax_head_ref_tuple->mr_ls [ %p ]\n", ax_head_ref_tuple, ax_head_ref_tuple->mr_ls);
 
 			ref_tuple = tuple__merge(ref_tuple, ax_head_ref_tuple);
 		}
@@ -582,14 +582,14 @@ static Cube *select_def__get_cube(SelectDef *select_def)
 
 static MddTuple *cube__basic_ref_vector(Cube *cube)
 {
-	// printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+	// // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 	MddTuple *tuple = mdd_tp__create();
 	int i, j;
 	int r_count = als_size(cube->dim_role_ls);
 	for (i = 0; i < r_count; i++)
 	{
 		DimensionRole *dim_role = als_get(cube->dim_role_ls, i);
-		// printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  dim_role->dim_gid = %lu\n", dim_role->dim_gid);
+		// // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  dim_role->dim_gid = %lu\n", dim_role->dim_gid);
 		int mp_size = als_size(mbrs_pool);
 		for (j = 0; j < mp_size; j++)
 		{
@@ -601,20 +601,20 @@ static MddTuple *cube__basic_ref_vector(Cube *cube)
 				break;
 			}
 
-			// // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  mbr->name = %s    %d\n", mbr->name, mdd_mbr__is_leaf(mbr));
+			// // // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  mbr->name = %s    %d\n", mbr->name, mdd_mbr__is_leaf(mbr));
 			// else if (mbr->dim_gid == cube->measure_dim->gid)
-			// 	// printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  measure member = %s\n", mbr->name);
+			// 	// // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  measure member = %s\n", mbr->name);
 		}
 	}
-	// printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  cube->measure_dim->gid = %lu\n", cube->measure_dim->gid);
+	// // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  cube->measure_dim->gid = %lu\n", cube->measure_dim->gid);
 	// for (i = 0; i < als_size(cube->measure_mbrs); i++)
 	// {
 	// 	Member *mbr = als_get(cube->measure_mbrs, i);
-	// 	// printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  measure member = %s    %d\n", mbr->name, mdd_mbr__is_leaf(mbr));
+	// 	// // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  measure member = %s    %d\n", mbr->name, mdd_mbr__is_leaf(mbr));
 	// }
 	MddMemberRole *measure_mr = mdd_mr__create(als_get(cube->measure_mbrs, 0), NULL);
 	mdd_tp__add_mbrole(tuple, measure_mr);
-	// printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+	// // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 	return tuple;
 }
 
@@ -639,14 +639,14 @@ static MddTuple *tuple__merge(MddTuple *ctx_tuple, MddTuple *tuple_frag)
 		{
 			MddMemberRole *f_mr = (MddMemberRole *)als_get(tuple_frag->mr_ls, j);
 
-			// // printf("[debug] *******************************************************************************\n");
-			// // // printf("[debug] ******************* ctx_mr = %p \n", ctx_mr);
-			// // printf("[debug] ******************* ctx_mr->dim_role = %p \n", ctx_mr->dim_role);
-			// // // printf("[debug] ******************* ctx_mr->dim_role->gid = %lu \n", ctx_mr->dim_role->gid);
-			// // // printf("[debug] ******************* f_mr = %p \n", f_mr);
-			// // printf("[debug] ******************* f_mr->dim_role = %p \n", f_mr->dim_role);
-			// // // printf("[debug] ******************* f_mr->dim_role->gid = %lu \n", f_mr->dim_role->gid);
-			// // printf("[debug] *******************************************************************************\n");
+			// // // printf("[debug] *******************************************************************************\n");
+			// // // // printf("[debug] ******************* ctx_mr = %p \n", ctx_mr);
+			// // // printf("[debug] ******************* ctx_mr->dim_role = %p \n", ctx_mr->dim_role);
+			// // // // printf("[debug] ******************* ctx_mr->dim_role->gid = %lu \n", ctx_mr->dim_role->gid);
+			// // // // printf("[debug] ******************* f_mr = %p \n", f_mr);
+			// // // printf("[debug] ******************* f_mr->dim_role = %p \n", f_mr->dim_role);
+			// // // // printf("[debug] ******************* f_mr->dim_role->gid = %lu \n", f_mr->dim_role->gid);
+			// // // printf("[debug] *******************************************************************************\n");
 
 			if ((ctx_mr->dim_role != NULL && f_mr->dim_role != NULL) && (ctx_mr->dim_role->gid == f_mr->dim_role->gid)) {
 				mdd_tp__add_mbrole(tp, f_mr);
@@ -719,7 +719,7 @@ MddTuple *mdd_tp__create()
 {
 	MddTuple *tp = (MddTuple *)mem_alloc_0(sizeof(MddTuple));
 	tp->mr_ls = als_create(32, "MddMemberRole *");
-	printf("[debug] 创建 MddTuple >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> tp->mr_ls->idx = %u\n", tp->mr_ls->idx);
+	// printf("[debug] 创建 MddTuple >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> tp->mr_ls->idx = %u\n", tp->mr_ls->idx);
 	return tp;
 }
 
