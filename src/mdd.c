@@ -450,14 +450,10 @@ void *exe_multi_dim_queries(SelectDef *select_def)
 	for (i = 0; i < x_size; i++)
 	{
 		MddAxis *ax = als_get(axes, i);
-		// unsigned int _len = mdd_ax__len(ax);
-		// printf("@@@@@@@-----@@@@@@@-----@@@@@@@-----@@@@@@@-----@@@@@@@----->>>>  %u\n", _len);
 		rs_len *= mdd_ax__len(ax);
 	}
-	// // printf("[debug] multi-dimensional result length < %lu >\n", rs_len);
 
 	// !!! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	
 	Cube *cube = select_def__get_cube(select_def);
 	MddTuple *basic_tuple = cube__basic_ref_vector(cube);
 
@@ -483,57 +479,19 @@ void *exe_multi_dim_queries(SelectDef *select_def)
 				MddTuple *tuple = mdd_ax__get_tuple(ax, i);
 				for (f = 0; f < offset_arr[matx_col]; f++)
 					// tuples_matrix_h[matx_col * rs_len + matx_row++] = tuple;
-					tuples_matrix_h[    (matx_row++) * x_size + matx_col    ] = tuple;
+					tuples_matrix_h[(matx_row++) * x_size + matx_col] = tuple;
 			}
 		}
 	}
 
 	for (i = 0; i < rs_len; i++)
-		tuples_matrix_h[i] = _MddTuple__mergeTuples(tuples_matrix_h+(i * x_size), x_size);
+		tuples_matrix_h[i] = _MddTuple__mergeTuples(tuples_matrix_h + (i * x_size), x_size);
 
 	printf("// TODO ....................... %s:%d\n", __FILE__, __LINE__); // TODO should be return a multi-dim-result
 	// ??? >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 	return NULL;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 static ArrayList *select_def__build_axes(SelectDef *select_def)
 {
@@ -648,12 +606,14 @@ static MddTuple *tuple__merge(MddTuple *ctx_tuple, MddTuple *tuple_frag)
 			// // // // printf("[debug] ******************* f_mr->dim_role->gid = %lu \n", f_mr->dim_role->gid);
 			// // // printf("[debug] *******************************************************************************\n");
 
-			if ((ctx_mr->dim_role != NULL && f_mr->dim_role != NULL) && (ctx_mr->dim_role->gid == f_mr->dim_role->gid)) {
+			if ((ctx_mr->dim_role != NULL && f_mr->dim_role != NULL) && (ctx_mr->dim_role->gid == f_mr->dim_role->gid))
+			{
 				mdd_tp__add_mbrole(tp, f_mr);
 				goto jump_a;
 			}
 
-			if (ctx_mr->dim_role == NULL && f_mr->dim_role == NULL) {
+			if (ctx_mr->dim_role == NULL && f_mr->dim_role == NULL)
+			{
 				mdd_tp__add_mbrole(tp, f_mr);
 				goto jump_a;
 			}
@@ -670,17 +630,19 @@ static MddTuple *tuple__merge(MddTuple *ctx_tuple, MddTuple *tuple_frag)
 		{
 			MddMemberRole *ctx_mr = (MddMemberRole *)als_get(ctx_tuple->mr_ls, i);
 
-			if ((ctx_mr->dim_role != NULL && f_mr->dim_role != NULL) && (ctx_mr->dim_role->gid == f_mr->dim_role->gid)) {
+			if ((ctx_mr->dim_role != NULL && f_mr->dim_role != NULL) && (ctx_mr->dim_role->gid == f_mr->dim_role->gid))
+			{
 				goto jump_b;
 			}
 
-			if (ctx_mr->dim_role == NULL && f_mr->dim_role == NULL) {
+			if (ctx_mr->dim_role == NULL && f_mr->dim_role == NULL)
+			{
 				goto jump_b;
 			}
 		}
 		mdd_tp__add_mbrole(tp, f_mr);
 	jump_b:
-		j=j;
+		j = j;
 	}
 
 	return tp;
@@ -863,9 +825,9 @@ MddTuple *_MddTuple__mergeTuples(MddTuple **tps, int count)
 {
 	if (count < 2)
 		return tps[0];
-	MddTuple *tuple = tuple__merge(tps[0],tps[1]);
+	MddTuple *tuple = tuple__merge(tps[0], tps[1]);
 	int i;
-	for (i = 2;i<count;i++)
+	for (i = 2; i < count; i++)
 		tuple = tuple__merge(tuple, tps[i]);
 	return tuple;
 }
