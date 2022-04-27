@@ -861,7 +861,6 @@ MddTuple *mdd_ax__get_tuple(MddAxis *ax, int idx)
 
 MddTuple *_MddTuple__mergeTuples(MddTuple **tps, int count)
 {
-	// printf("// TODO  ++++++++++++++++++++++++++++++++++++++++++++  %s:%d\n", __FILE__, __LINE__);
 	if (count < 2)
 		return tps[0];
 	MddTuple *tuple = tuple__merge(tps[0],tps[1]);

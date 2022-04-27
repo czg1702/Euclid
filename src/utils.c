@@ -8,57 +8,8 @@
 
 #include "utils.h"
 
-// static unsigned long mem_all_times = 0;
-
-// static char *static_mem = NULL;
-// static size_t mem_p = 0;
-
-// pthread_mutex_t mutex_AAA;
-
 void *mem_alloc_0(size_t size)
 {
-	// // pthread_mutex_lock(&mutex_AAA);
-
-	// // // // printf("[debug] ()()()()()<><><><><> mem_alloc_0% 20lu% 20lu\n", mem_p, size);
-	// if (static_mem == NULL) {
-	// 	unsigned int m128 = 1024 * 1024 * 128;
-	// 	static_mem = malloc(m128);
-	// 	memset(static_mem, 0, m128);
-	// 	mem_p = 0;
-
-	// 	long i;
-	// 	for (i=0;i<m128;i++) {
-	// 		char ccc = static_mem[i];
-	// 		if (ccc) {
-	// 			printf("内存创建失败！！！    < %lu >    < %c >\n",i,ccc);
-	// 			exit(1);
-	// 		}
-	// 	}
-
-	// }
-	// char *mem = &(static_mem[mem_p]);
-
-	// // TODO debug -- !!!
-	// // TODO debug ----
-	// // TODO debug ------
-	// unsigned long i;
-	// for (i=0;i<size;i++) {
-	// 	if (mem[i]) {
-	// 		printf("内存警告！！！           < i = %u >\n", i);
-	// 		exit(1);
-	// 	}
-	// }
-	// // TODO debug ------
-	// // TODO debug ----
-	// // TODO debug -- ???
-
-	// mem_p += size;
-
-	// // pthread_mutex_unlock(&mutex_AAA);
-
-	// return mem;
-
-	// // printf("[debug] >>>------------------------mem_alloc_0 << %lu >> times --------------------------> mem_alloc_0( %lu )\n", ++mem_all_times, size);
 	void *addr = malloc(size);
 	memset(addr, 0, size);
 	return addr;
