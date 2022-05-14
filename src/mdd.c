@@ -11,7 +11,7 @@
 static md_gid lastest_md_gid = -1;
 
 static ArrayList *dims_pool;
-static ArrayList *mbrs_pool;
+static ArrayList *member_pool;
 static ArrayList *cubes_pool;
 static Member *_create_member_lv1(Dimension *dim, char *mbr_name);
 static Member *_create_member_child(Member *parent, char *child_name);
@@ -103,7 +103,7 @@ Member *create_member(ArrayList *mbr_path)
 		// // printf("[debug] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@% 32s    level = %d\n", mbr_lv1->name, mbr_lv1->lv);
 		append_file_data(META_DEF_MBRS_FILE_PATH, (char *)mbr_lv1, sizeof(Member));
 
-		als_add(mbrs_pool, mbr_lv1);
+		als_add(member_pool, mbr_lv1);
 	}
 
 	if (mbr_lv1->lv < new_leaf_mbr_lv && mdd_mbr__is_leaf(mbr_lv1))
@@ -122,7 +122,7 @@ Member *create_member(ArrayList *mbr_path)
 			m = _create_member_child(p_m, als_get(mbr_path, i));
 			// // printf("[debug] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@% 32s    level = %d\n", m->name, m->lv);
 			append_file_data(META_DEF_MBRS_FILE_PATH, (char *)m, sizeof(Member));
-			als_add(mbrs_pool, m);
+			als_add(member_pool, m);
 		}
 
 		if (m->lv < new_leaf_mbr_lv && mdd_mbr__is_leaf(m))
@@ -139,8 +139,8 @@ Member *create_member(ArrayList *mbr_path)
 
 int create_members(ArrayList *mbrs_info_als)
 {
-	if (mbrs_pool == NULL)
-		mbrs_pool = als_create(256, "members pool | Member *");
+	if (member_pool == NULL)
+		member_pool = als_create(256, "members pool | Member *");
 
 	unsigned int size = als_size(mbrs_info_als);
 	int i = 0;
@@ -185,13 +185,13 @@ Dimension *find_dim_by_gid(md_gid dim_gid)
 
 Member *find_member_lv1(Dimension *dim, char *mbr_name)
 {
-	if (mbrs_pool == NULL)
+	if (member_pool == NULL)
 		return NULL;
 
-	__uint32_t i = 0, sz = als_size(mbrs_pool);
+	__uint32_t i = 0, sz = als_size(member_pool);
 	while (i < sz)
 	{
-		Member *mbr = als_get(mbrs_pool, i++);
+		Member *mbr = als_get(member_pool, i++);
 		if ((strcmp(mbr_name, mbr->name) == 0) && dim->gid == mbr->dim_gid)
 			return mbr;
 	}
@@ -200,10 +200,10 @@ Member *find_member_lv1(Dimension *dim, char *mbr_name)
 
 Member *find_member_child(Member *parent_mbr, char *child_name)
 {
-	__uint32_t i = 0, sz = als_size(mbrs_pool);
+	__uint32_t i = 0, sz = als_size(member_pool);
 	while (i < sz)
 	{
-		Member *mbr = als_get(mbrs_pool, i++);
+		Member *mbr = als_get(member_pool, i++);
 		if ((strcmp(child_name, mbr->name) == 0) && parent_mbr->gid == mbr->p_gid)
 			return mbr;
 	}
@@ -454,8 +454,6 @@ void *exe_multi_dim_queries(SelectDef *select_def)
 	}
 
 	// !!! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	Cube *cube = select_def__get_cube(select_def);
-	MddTuple *basic_tuple = cube__basic_ref_vector(cube);
 
 	unsigned int offset_arr[x_size];
 	offset_arr[x_size - 1] = 1;
@@ -484,13 +482,18 @@ void *exe_multi_dim_queries(SelectDef *select_def)
 		}
 	}
 
-	for (i = 0; i < rs_len; i++)
+	Cube *cube = select_def__get_cube(select_def);
+	MddTuple *basic_tuple = cube__basic_ref_vector(cube);
+
+	for (i = 0; i < rs_len; i++) {
 		tuples_matrix_h[i] = _MddTuple__mergeTuples(tuples_matrix_h + (i * x_size), x_size);
+		tuples_matrix_h[i] = tuple__merge(basic_tuple, tuples_matrix_h[i]);
+	}
 
-	printf("// TODO ....................... %s:%d\n", __FILE__, __LINE__); // TODO should be return a multi-dim-result
-	// ??? >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	// 'md_result' is equivalent to a double array whose length is 'rs_len'.
+	double *md_result = vce_vactors_values(tuples_matrix_h, rs_len);
 
-	return NULL;
+	return md_result;
 }
 
 static ArrayList *select_def__build_axes(SelectDef *select_def)
@@ -548,10 +551,10 @@ static MddTuple *cube__basic_ref_vector(Cube *cube)
 	{
 		DimensionRole *dim_role = als_get(cube->dim_role_ls, i);
 		// // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  dim_role->dim_gid = %lu\n", dim_role->dim_gid);
-		int mp_size = als_size(mbrs_pool);
+		int mp_size = als_size(member_pool);
 		for (j = 0; j < mp_size; j++)
 		{
-			Member *mbr = als_get(mbrs_pool, j);
+			Member *mbr = als_get(member_pool, j);
 			if (mbr->dim_gid == dim_role->dim_gid && mdd_mbr__is_leaf(mbr))
 			{
 				MddMemberRole *mbr_role = mdd_mr__create(mbr, dim_role);
@@ -830,4 +833,77 @@ MddTuple *_MddTuple__mergeTuples(MddTuple **tps, int count)
 	for (i = 2; i < count; i++)
 		tuple = tuple__merge(tuple, tps[i]);
 	return tuple;
+}
+
+void Tuple_print(MddTuple *tuple) {
+	printf(">>> [ Tuple info ] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ addr < %p >\n", tuple);
+	unsigned int len = als_size(tuple->mr_ls);
+	printf("als_size(tuple->mr_ls) = < %u >\n", len);
+	printf("   tuple->mr_ls->desc is < %s >\n", tuple->mr_ls->desc);
+	unsigned int i;
+	for (i=0;i<len;i++) {
+		MemberRole_print(als_get(tuple->mr_ls, i));
+	}
+}
+
+void MemberRole_print(MddMemberRole *mr) {
+	printf(">>> [ MddMemberRole info ] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> addr < %p >\n", mr);
+	Member_print(mr->member);
+	DimensionRole_print(mr->dim_role);
+}
+
+void Member_print(Member *m) {
+	printf(">>> [ Member info ] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> addr < %p >\n", m);
+	printf("\t     name - %s\n", m->name);
+	printf("\t      gid - %lu\n", m->gid);
+	printf("\t    p_gid - %lu\n", m->p_gid);
+	printf("\t  dim_gid - %lu\n", m->dim_gid);
+	printf("\t       lv - %u\n", m->lv);
+	printf("\t bin_attr - %d\n", m->bin_attr);
+	printf("\t abs_path - %p\n", m->abs_path);
+	/*
+typedef struct _stct_mbr_
+{
+	char name[MD_ENTITY_NAME_BYTSZ];
+	md_gid gid;
+	md_gid p_gid;
+	md_gid dim_gid;
+	unsigned short lv;
+
+	// Each binary bit represents an attribute switch.
+	// lowest bit, 0 - leaf member, 1 - non-leaf member.
+	int bin_attr;
+} Member;
+	*/
+}
+
+void DimensionRole_print(DimensionRole *dr) {
+	printf(">>> [ DimensionRole info ] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> addr < %p >\n", dr);
+
+}
+
+void mdd__gen_mbr_abs_path(Member *m) {
+	if (m->abs_path)
+		return;
+	
+	m->abs_path = mem_alloc_0(m->lv * sizeof(md_gid));
+
+	Member *current_m = m;
+
+	int i;
+	for (i = m->lv - 1; i>=0; i--) {
+		m->abs_path[i] = current_m->gid;
+		if (current_m->p_gid)
+			current_m = find_member_by_gid(current_m->p_gid);
+	}
+}
+
+Member *find_member_by_gid(md_gid m_gid) {
+	int i;
+	for (i=0; i<als_size(member_pool); i++) {
+		Member *m = als_get(member_pool, i);
+		if (m->gid == m_gid)
+			return m;
+	}
+	return NULL;
 }

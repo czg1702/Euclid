@@ -4,6 +4,8 @@
 #include "command.h"
 #include "utils.h"
 #include "rb-tree.h"
+#include "mdd.h"
+#include "mdx.h"
 
 #define SPACE_DEF_PARTITION_COUNT 128
 
@@ -78,5 +80,7 @@ void space_add_measure(MeasureSpace *space, __uint64_t measure_position, void *c
 void space_plan(MeasureSpace *space);
 
 void space__destory(MeasureSpace *);
+
+double *vce_vactors_values(MddTuple **tuples_matrix_h, unsigned long v_len);
 
 #endif

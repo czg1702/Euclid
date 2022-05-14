@@ -111,6 +111,8 @@ f_0:
     if (space_capacity % SPACE_DEF_PARTITION_COUNT)
         partition_scope++;
 
+    printf("[debug] space_capacity < %lu >, SPACE_DEF_PARTITION_COUNT < %d >, partition_scope < %lu >\n", space_capacity, SPACE_DEF_PARTITION_COUNT, partition_scope);
+
     // Creates a new logical multidimensional array object in memory.
     MeasureSpace *space = space_create(SPACE_DEF_PARTITION_COUNT, partition_scope, vals_count);
 
@@ -374,4 +376,21 @@ void space__destory(MeasureSpace *s)
     release_mem(s->data_ls_h);
 
     release_mem(s);
+}
+
+double *vce_vactors_values(MddTuple **tuples_matrix_h, unsigned long v_len) {
+    printf("// TODO ....................... %s:%d\n", __FILE__, __LINE__);
+    unsigned long i, j;
+    for (i=0;i<v_len;i++) {
+        MddTuple *tuple = tuples_matrix_h[i];
+        for (j=0;j<als_size(tuple->mr_ls);j++) {
+            MddMemberRole *mr = als_get(tuple->mr_ls, j);
+            Member *m = mr->member;
+            if (!m->abs_path)
+                mdd__gen_mbr_abs_path(m);
+            Member_print(m);
+        }
+        // Tuple_print(tuple);
+    }
+    return NULL;
 }

@@ -33,7 +33,12 @@ typedef struct _stct_mbr_
 	// Each binary bit represents an attribute switch.
 	// lowest bit, 0 - leaf member, 1 - non-leaf member.
 	int bin_attr;
+
+	// abs_path is a data block of length 'lv * sizeof(md_gid)' bytes.
+	md_gid *abs_path;
 } Member;
+
+void Member_print(Member *);
 
 int mdd_mbr__is_leaf(Member *);
 
@@ -70,6 +75,8 @@ typedef struct _dim_role_stct_
 	md_gid dim_gid;
 } DimensionRole;
 
+void DimensionRole_print(DimensionRole *);
+
 int build_cube(char *name, ArrayList *dim_role_ls, ArrayList *measures);
 
 int insert_cube_measure_vals(char *cube_name, ArrayList *ls_ids_vctr_mear);
@@ -90,6 +97,8 @@ typedef struct mdd_tuple
 	ArrayList *mr_ls;
 } MddTuple;
 
+void Tuple_print(MddTuple *);
+
 MddTuple *mdd_tp__create();
 
 typedef struct mdd_set
@@ -108,6 +117,8 @@ typedef struct mdd_mbr_role
 	Member *member;
 	DimensionRole *dim_role;
 } MddMemberRole;
+
+void MemberRole_print(MddMemberRole *);
 
 /**
  * When the DimensionRole parameter is empty, it indicates the measure member role.
@@ -135,5 +146,9 @@ void mddset__add_tuple(MddSet *, MddTuple *);
 MddTuple *mdd_ax__get_tuple(MddAxis *, int);
 
 MddTuple *_MddTuple__mergeTuples(MddTuple **tps, int count);
+
+void mdd__gen_mbr_abs_path(Member *);
+
+Member *find_member_by_gid(md_gid);
 
 #endif
