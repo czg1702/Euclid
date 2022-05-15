@@ -301,7 +301,7 @@ ArrayList *als_create(unsigned int init_capacity, char *desc)
 		desc_len = desc_len < COMMON_OBJ_DESC_LEN ? desc_len : COMMON_OBJ_DESC_LEN - 1;
 		memcpy(als->desc, desc, desc_len);
 	}
-	
+
 	return als;
 }
 

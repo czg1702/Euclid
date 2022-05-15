@@ -70,13 +70,14 @@ f_0:
         {
             __uint32_t coor_pointer_len = *((__uint32_t *)slide_over_mem(data, sizeof(__uint32_t), &i));
             void *fragments = slide_over_mem(data, coor_pointer_len * sizeof(__uint64_t), &i);
-// Code for testing >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-int i___;
-for (i___=0;i___<coor_pointer_len;i___++) {
-    printf("%lu  ", ((md_gid *) fragments)[i___]);
-}
-printf("\n");
-// Code for testing >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            // Code for testing >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            int i___;
+            for (i___ = 0; i___ < coor_pointer_len; i___++)
+            {
+                printf("%lu  ", ((md_gid *)fragments)[i___]);
+            }
+            printf("\n");
+            // Code for testing >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
             // In the new data range, traverse all the scales of each coordinate axis, and store all of them in the corresponding axis file.
             char axis_meta_file[128];
@@ -385,11 +386,12 @@ void space__destory(MeasureSpace *s)
     release_mem(s);
 }
 
-double *vce_vactors_values(MddTuple **tuples_matrix_h, unsigned long v_len) {
+double *vce_vactors_values(MddTuple **tuples_matrix_h, unsigned long v_len)
+{
     printf("// TODO ....................... %s:%d\n", __FILE__, __LINE__);
 
-    MddMemberRole *mr_0 = als_get(tuples_matrix_h[0] -> mr_ls, 0);
-    Cube *cube = find_cube_by_gid(mr_0 -> dim_role -> cube_gid);
+    MddMemberRole *mr_0 = als_get(tuples_matrix_h[0]->mr_ls, 0);
+    Cube *cube = find_cube_by_gid(mr_0->dim_role->cube_gid);
 
     // code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     Cube_print(cube);
@@ -398,15 +400,19 @@ double *vce_vactors_values(MddTuple **tuples_matrix_h, unsigned long v_len) {
     unsigned long i, j;
 
     CoordinateSystem *coor = NULL;
-    for (i=0;i<als_size(coor_sys_ls);i++) {
-        if (((CoordinateSystem *)als_get(coor_sys_ls, i))->id = cube->gid) {
+    for (i = 0; i < als_size(coor_sys_ls); i++)
+    {
+        if (((CoordinateSystem *)als_get(coor_sys_ls, i))->id = cube->gid)
+        {
             coor = als_get(coor_sys_ls, i);
         }
     }
 
-    for (i=0;i<v_len;i++) {
+    for (i = 0; i < v_len; i++)
+    {
         MddTuple *tuple = tuples_matrix_h[i];
-        for (j=0;j<als_size(tuple->mr_ls);j++) {
+        for (j = 0; j < als_size(tuple->mr_ls); j++)
+        {
             MddMemberRole *mr = als_get(tuple->mr_ls, j);
             Member *m = mr->member;
             if (!m->abs_path)

@@ -232,10 +232,10 @@ Member *_new_member(char *name, md_gid dim_gid, md_gid parent_gid, __u_short lv)
 	mbr->p_gid = parent_gid;
 	mbr->lv = lv;
 	// printf("******************************** mbr->name %s\n", mbr->name);
-// Code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-// printf("// Code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-// Member_print(mbr);
-// Code for testing ? >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	// Code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	// printf("// Code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+	// Member_print(mbr);
+	// Code for testing ? >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	return mbr;
 }
 
@@ -406,7 +406,8 @@ Cube *find_cube_by_name(char *cube_name)
 	return NULL;
 }
 
-Cube *find_cube_by_gid(md_gid id) {
+Cube *find_cube_by_gid(md_gid id)
+{
 	__uint32_t i, sz = als_size(cubes_pool);
 	for (i = 0; i < sz; i++)
 	{
@@ -500,7 +501,8 @@ void *exe_multi_dim_queries(SelectDef *select_def)
 	Cube *cube = select_def__get_cube(select_def);
 	MddTuple *basic_tuple = cube__basic_ref_vector(cube);
 
-	for (i = 0; i < rs_len; i++) {
+	for (i = 0; i < rs_len; i++)
+	{
 		tuples_matrix_h[i] = _MddTuple__mergeTuples(tuples_matrix_h + (i * x_size), x_size);
 		tuples_matrix_h[i] = tuple__merge(basic_tuple, tuples_matrix_h[i]);
 	}
@@ -850,30 +852,35 @@ MddTuple *_MddTuple__mergeTuples(MddTuple **tps, int count)
 	return tuple;
 }
 
-void Cube_print(Cube *c) {
+void Cube_print(Cube *c)
+{
 	printf(">>> [ Cube info ] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ addr < %p >\n", c);
 	printf("\t     name - %s\n", c->name);
 	printf("\t      gid - %lu\n", c->gid);
 }
 
-void Tuple_print(MddTuple *tuple) {
+void Tuple_print(MddTuple *tuple)
+{
 	printf(">>> [ Tuple info ] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ addr < %p >\n", tuple);
 	unsigned int len = als_size(tuple->mr_ls);
 	printf("als_size(tuple->mr_ls) = < %u >\n", len);
 	printf("   tuple->mr_ls->desc is < %s >\n", tuple->mr_ls->desc);
 	unsigned int i;
-	for (i=0;i<len;i++) {
+	for (i = 0; i < len; i++)
+	{
 		MemberRole_print(als_get(tuple->mr_ls, i));
 	}
 }
 
-void MemberRole_print(MddMemberRole *mr) {
+void MemberRole_print(MddMemberRole *mr)
+{
 	printf(">>> [ MddMemberRole info ] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> addr < %p >\n", mr);
 	Member_print(mr->member);
 	DimensionRole_print(mr->dim_role);
 }
 
-void Member_print(Member *m) {
+void Member_print(Member *m)
+{
 	printf(">>> [ Member info ] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> addr < %p >\n", m);
 	printf("\t     name - %s\n", m->name);
 	printf("\t      gid - %lu\n", m->gid);
@@ -898,30 +905,34 @@ typedef struct _stct_mbr_
 	*/
 }
 
-void DimensionRole_print(DimensionRole *dr) {
+void DimensionRole_print(DimensionRole *dr)
+{
 	printf(">>> [ DimensionRole info ] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> addr < %p >\n", dr);
-
 }
 
-void mdd__gen_mbr_abs_path(Member *m) {
+void mdd__gen_mbr_abs_path(Member *m)
+{
 	if (m->abs_path)
 		return;
-	
+
 	m->abs_path = mem_alloc_0(m->lv * sizeof(md_gid));
 
 	Member *current_m = m;
 
 	int i;
-	for (i = m->lv - 1; i>=0; i--) {
+	for (i = m->lv - 1; i >= 0; i--)
+	{
 		m->abs_path[i] = current_m->gid;
 		if (current_m->p_gid)
 			current_m = find_member_by_gid(current_m->p_gid);
 	}
 }
 
-Member *find_member_by_gid(md_gid m_gid) {
+Member *find_member_by_gid(md_gid m_gid)
+{
 	int i;
-	for (i=0; i<als_size(member_pool); i++) {
+	for (i = 0; i < als_size(member_pool); i++)
+	{
 		Member *m = als_get(member_pool, i);
 		if (m->gid == m_gid)
 			return m;
