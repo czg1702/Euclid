@@ -409,6 +409,7 @@ double *vce_vactors_values(MddTuple **tuples_matrix_h, unsigned long v_len)
         }
     }
     CoordinateSystem__gen_auxiliary_index(coor);
+    CoordinateSystem__calculate_offset(coor);
 
     for (i = 0; i < v_len; i++)
     {
@@ -454,4 +455,27 @@ void CoordinateSystem__gen_auxiliary_index(CoordinateSystem *coor) {
         rbt__scan_do(tree, ax, __Axis_build_index);
         // printf("[debug] +++++++++++++++++ CoordinateSystem__gen_auxiliary_index < %u > < %d >\n",i,rbt__size(tree));
     }
+}
+
+void CoordinateSystem__calculate_offset(CoordinateSystem *coor) {
+    unsigned int i, ax_sz = als_size(coor->axes);
+    Axis *ax_n, *ax = als_get(coor->axes,ax_sz - 1);
+    ax->coor_offset = 1;
+
+    if (ax_sz < 2)
+        return;
+
+    for (i=ax_sz - 2;i>=0;i--) {
+        ax = als_get(coor->axes,i);
+        ax_n = als_get(coor->axes,i+1);
+        ax->coor_offset = ax_size(ax_n) * ax_n->coor_offset;
+        if (i == 0)
+            break;
+    }
+    // code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // for (i=0;i<ax_sz;i++) {
+    //     ax = als_get(coor->axes,i);
+    //     printf("[debug] +++++++++++++++++ ax->coor_offset = < %lu >\n",ax->coor_offset);
+    // }
+    // code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 }
