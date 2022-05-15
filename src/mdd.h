@@ -67,6 +67,8 @@ typedef struct _euclid_cube_stct_
 	ArrayList *measure_mbrs;
 } Cube;
 
+void Cube_print(Cube *);
+
 typedef struct _dim_role_stct_
 {
 	md_gid gid;
@@ -82,6 +84,8 @@ int build_cube(char *name, ArrayList *dim_role_ls, ArrayList *measures);
 int insert_cube_measure_vals(char *cube_name, ArrayList *ls_ids_vctr_mear);
 
 Cube *find_cube_by_name(char *cube_name);
+
+Cube *find_cube_by_gid(md_gid);
 
 void *gen_member_gid_abs_path(Cube *cube, ArrayList *mbr_path_str);
 

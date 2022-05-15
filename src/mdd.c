@@ -232,6 +232,10 @@ Member *_new_member(char *name, md_gid dim_gid, md_gid parent_gid, __u_short lv)
 	mbr->p_gid = parent_gid;
 	mbr->lv = lv;
 	// printf("******************************** mbr->name %s\n", mbr->name);
+// Code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+// printf("// Code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+// Member_print(mbr);
+// Code for testing ? >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	return mbr;
 }
 
@@ -397,6 +401,17 @@ Cube *find_cube_by_name(char *cube_name)
 	{
 		Cube *cube = als_get(cubes_pool, i);
 		if (strcmp(cube_name, cube->name) == 0)
+			return cube;
+	}
+	return NULL;
+}
+
+Cube *find_cube_by_gid(md_gid id) {
+	__uint32_t i, sz = als_size(cubes_pool);
+	for (i = 0; i < sz; i++)
+	{
+		Cube *cube = als_get(cubes_pool, i);
+		if (cube->gid = id)
 			return cube;
 	}
 	return NULL;
@@ -833,6 +848,12 @@ MddTuple *_MddTuple__mergeTuples(MddTuple **tps, int count)
 	for (i = 2; i < count; i++)
 		tuple = tuple__merge(tuple, tps[i]);
 	return tuple;
+}
+
+void Cube_print(Cube *c) {
+	printf(">>> [ Cube info ] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ addr < %p >\n", c);
+	printf("\t     name - %s\n", c->name);
+	printf("\t      gid - %lu\n", c->gid);
 }
 
 void Tuple_print(MddTuple *tuple) {
