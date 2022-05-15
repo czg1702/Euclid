@@ -17,9 +17,13 @@ typedef struct _coordinate_system
 
 CoordinateSystem *cs_create(__uint64_t *id_addr);
 
+void CoordinateSystem__gen_auxiliary_index(CoordinateSystem *);
+
 typedef struct _coordinate_axis
 {
     RedBlackTree *rbtree;
+    char *index;
+    unsigned int max_path_len;
 } Axis;
 
 Axis *ax_create();

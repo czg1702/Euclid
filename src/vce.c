@@ -70,14 +70,14 @@ f_0:
         {
             __uint32_t coor_pointer_len = *((__uint32_t *)slide_over_mem(data, sizeof(__uint32_t), &i));
             void *fragments = slide_over_mem(data, coor_pointer_len * sizeof(__uint64_t), &i);
-            // Code for testing >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-            int i___;
-            for (i___ = 0; i___ < coor_pointer_len; i___++)
-            {
-                printf("%lu  ", ((md_gid *)fragments)[i___]);
-            }
-            printf("\n");
-            // Code for testing >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            // // Code for testing >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            // int i___;
+            // for (i___ = 0; i___ < coor_pointer_len; i___++)
+            // {
+            //     printf("%lu  ", ((md_gid *)fragments)[i___]);
+            // }
+            // printf("\n");
+            // // Code for testing >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
             // In the new data range, traverse all the scales of each coordinate axis, and store all of them in the corresponding axis file.
             char axis_meta_file[128];
@@ -405,8 +405,10 @@ double *vce_vactors_values(MddTuple **tuples_matrix_h, unsigned long v_len)
         if (((CoordinateSystem *)als_get(coor_sys_ls, i))->id = cube->gid)
         {
             coor = als_get(coor_sys_ls, i);
+            break;
         }
     }
+    CoordinateSystem__gen_auxiliary_index(coor);
 
     for (i = 0; i < v_len; i++)
     {
@@ -417,9 +419,39 @@ double *vce_vactors_values(MddTuple **tuples_matrix_h, unsigned long v_len)
             Member *m = mr->member;
             if (!m->abs_path)
                 mdd__gen_mbr_abs_path(m);
-            Member_print(m);
+            // Member_print(m);
         }
-        Tuple_print(tuple);
+        // Tuple_print(tuple);
     }
     return NULL;
+}
+
+void *__set_ax_max_path_len(RBNode *node, void *param) {
+    Scale *scale = node->obj;
+    unsigned int *ax_max_len = param;
+    if (scale->fragments_len > *ax_max_len)
+        *ax_max_len = scale->fragments_len;
+    return NULL;
+}
+
+void *__Axis_build_index(RBNode *node, void *axis) {
+    Scale *scale = node->obj;
+    Axis *ax = axis;
+    memcpy(ax->index + node->index * ax->max_path_len * sizeof(md_gid), scale->fragments, scale->fragments_len * sizeof(md_gid));
+    return NULL;
+}
+
+void CoordinateSystem__gen_auxiliary_index(CoordinateSystem *coor) {
+    unsigned int i, ax_sz = als_size(coor->axes);
+    for (i=0;i<ax_sz;i++) {
+        Axis *ax = als_get(coor->axes,i);
+        RedBlackTree *tree = ax->rbtree;
+        // printf("[debug] +++++++++++++++++ ax->max_path_len = < %u >\n",ax->max_path_len);
+        rbt__scan_do(tree, &(ax->max_path_len), __set_ax_max_path_len);
+        // printf("[debug] +++++++++++++++++ CoordinateSystem__gen_auxiliary_index < %u > < %d >\n",i,rbt__size(tree));
+        // printf("[debug] +++++++++++++++++ ax->max_path_len = < %u >\n",ax->max_path_len);
+        ax->index = mem_alloc_0(rbt__size(tree) * ax->max_path_len * sizeof(md_gid));
+        rbt__scan_do(tree, ax, __Axis_build_index);
+        // printf("[debug] +++++++++++++++++ CoordinateSystem__gen_auxiliary_index < %u > < %d >\n",i,rbt__size(tree));
+    }
 }
