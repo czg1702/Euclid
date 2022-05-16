@@ -263,6 +263,7 @@ int build_cube(char *name, ArrayList *dim_role_ls, ArrayList *measures)
 		Dimension *dim = find_dim_by_name(dim_name);
 
 		DimensionRole *d_role = mem_alloc_0(sizeof(DimensionRole));
+		d_role->sn = i / 2;
 		memcpy(d_role->name, dim_role_name, strlen(dim_role_name));
 		d_role->gid = gen_md_gid();
 		d_role->cube_gid = cube->gid;

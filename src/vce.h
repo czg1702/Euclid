@@ -43,7 +43,7 @@ typedef struct _axis_scale
     int fragments_len;
 } Scale;
 
-void scal__show(Scale *);
+void Scale_print(Scale *);
 
 Scale *scal_create();
 

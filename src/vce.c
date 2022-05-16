@@ -15,6 +15,8 @@
 static ArrayList *coor_sys_ls;
 static ArrayList *space_ls;
 
+static double do_calculate_measure_value(Cube *, MddTuple *);
+
 void vce_init()
 {
     coor_sys_ls = als_create(16, "CoordinateSystem *");
@@ -219,6 +221,7 @@ Scale *scal__alloc(int fgs_len, void *fragments)
 
 void ax_set_scale(Axis *axis, Scale *scale)
 {
+    Scale_print(scale);
     rbt_add(axis->rbtree, scale);
 }
 
@@ -338,7 +341,7 @@ void space_plan(MeasureSpace *space)
 __uint64_t ax_scale_position(Axis *axis, int fgs_len, void *fragments)
 {
     Scale *s = scal__alloc(fgs_len, fragments);
-    // scal__show(s);
+    // Scale_print(s);
     RBNode *n = rbt__find(axis->rbtree, s);
     return n->index;
 }
@@ -362,9 +365,14 @@ void space_add_measure(MeasureSpace *space, __uint64_t measure_position, void *c
     rbt_add(space->tree_ls_h[measure_position / space->segment_scope], cell);
 }
 
-void scal__show(Scale *s)
+void Scale_print(Scale *s)
 {
-    printf("Scale <%p>\n", s);
+    printf("Scale <%p> [ fragments_len = %d ] ", s, s->fragments_len);
+    int i;
+    for (i=0;i<s->fragments_len;i++) {
+        printf("  %lu", s->fragments[i]);
+    }
+    printf("\n");
 }
 
 void space__destory(MeasureSpace *s)
@@ -394,7 +402,7 @@ double *vce_vactors_values(MddTuple **tuples_matrix_h, unsigned long v_len)
     Cube *cube = find_cube_by_gid(mr_0->dim_role->cube_gid);
 
     // code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    Cube_print(cube);
+    // Cube_print(cube);
     // code for testing ? >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     unsigned long i, j;
@@ -424,7 +432,13 @@ double *vce_vactors_values(MddTuple **tuples_matrix_h, unsigned long v_len)
         }
         // Tuple_print(tuple);
     }
-    return NULL;
+
+    double *result = mem_alloc_0(v_len * sizeof(double));
+
+    for (i = 0; i < v_len; i++)
+        result[i] = do_calculate_measure_value(cube, tuples_matrix_h[i]);
+
+    return result;
 }
 
 void *__set_ax_max_path_len(RBNode *node, void *param) {
@@ -454,6 +468,17 @@ void CoordinateSystem__gen_auxiliary_index(CoordinateSystem *coor) {
         ax->index = mem_alloc_0(rbt__size(tree) * ax->max_path_len * sizeof(md_gid));
         rbt__scan_do(tree, ax, __Axis_build_index);
         // printf("[debug] +++++++++++++++++ CoordinateSystem__gen_auxiliary_index < %u > < %d >\n",i,rbt__size(tree));
+        // code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        printf("\n#####################################################################################################\n");
+        int _i, _j;
+        for (_i=0;_i<rbt__size(tree);_i++) {
+            for (_j=0;_j<ax->max_path_len;_j++) {
+                printf("%lu  ", ((md_gid *)ax->index)[ _i * ax->max_path_len + _j ]);
+            }
+            printf("\n");
+        }
+        printf("#####################################################################################################\n\n");
+        // code for testing ? >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     }
 }
 
@@ -478,4 +503,24 @@ void CoordinateSystem__calculate_offset(CoordinateSystem *coor) {
     //     printf("[debug] +++++++++++++++++ ax->coor_offset = < %lu >\n",ax->coor_offset);
     // }
     // code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+}
+
+static double do_calculate_measure_value(Cube *cube, MddTuple *tuple) {
+    // TODO
+    printf("[ do_calculate_measure_value ] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+    printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n");
+
+    int i, sz = als_size(tuple->mr_ls);
+
+    for (i=0;i<sz;i++) {
+        MddMemberRole *mr = als_get(tuple->mr_ls,i);
+        DimensionRole *dr = mr->dim_role;
+        if (dr)
+            printf("DR - [ %s ] sn = %d\n",dr->name  , dr->sn);
+        else
+            printf("DR - measure DR\n");
+    }
+
+    printf("\n\n");
+    return 0;
 }

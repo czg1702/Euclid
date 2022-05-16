@@ -75,6 +75,7 @@ typedef struct _dim_role_stct_
 	char name[MD_ENTITY_NAME_BYTSZ];
 	md_gid cube_gid;
 	md_gid dim_gid;
+	int sn; // sequence number
 } DimensionRole;
 
 void DimensionRole_print(DimensionRole *);
