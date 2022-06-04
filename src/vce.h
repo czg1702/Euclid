@@ -23,6 +23,7 @@ void CoordinateSystem__calculate_offset(CoordinateSystem *);
 typedef struct _coordinate_axis
 {
     RedBlackTree *rbtree;
+    RedBlackTree *sor_idx_tree; // ScaleOffsetRange *
     char *index;
     unsigned long coor_offset;
     unsigned int max_path_len;
@@ -56,6 +57,25 @@ int scal_cmp(void *_one, void *_other);
 void scal_put_fragments(Scale *scale, int fgs_len, void *fragments);
 
 Scale *scal__alloc(int fgs_len, void *fragments);
+
+typedef struct _scale_offset_range
+{
+    md_gid gid; // The ID of the detail or fee detail dimension member
+
+    unsigned long start_position;
+    unsigned long end_position;
+
+    unsigned long start_offset;
+    unsigned long end_offset;
+} ScaleOffsetRange;
+
+ScaleOffsetRange *ScaleOffsetRange_create();
+
+void ScaleOffsetRange_print(ScaleOffsetRange *);
+
+int ScaleOffsetRange_cmp(void *obj, void *other);
+
+void *ScaleOffsetRange_destory(void *);
 
 void ax_set_scale(Axis *axis, Scale *scale);
 

@@ -39,6 +39,7 @@ void rbt__destory_node(RBNode *);
 
 void rbt__destory(RedBlackTree *);
 
+// param comparison_func - when `other` is sorted before `obj`, return -1
 RedBlackTree *rbt_create(char *desc, int (*comparison_func)(void *obj, void *other), void *(*release_obj_func)(void *obj));
 
 void rbt_add(RedBlackTree *rbt, void *obj);

@@ -50,7 +50,9 @@ ssize_t read_sock_pkg(int sock_fd, void **buf, size_t *buf_len)
 
 int release_mem(void *addr)
 {
+	// TODO 2022年5月17日20:19:38
 	// free(addr);
+	// printf("[ func - release_mem ] This function has not been implemented yet.\n");
 	return 0;
 }
 

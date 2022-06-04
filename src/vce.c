@@ -180,6 +180,7 @@ Axis *ax_create()
 {
     Axis *ax = mem_alloc_0(sizeof(Axis));
     ax->rbtree = rbt_create("struct _axis_scale *", scal_cmp, scal__destory);
+    ax->sor_idx_tree = rbt_create("ScaleOffsetRange *", ScaleOffsetRange_cmp, ScaleOffsetRange_destory);
     return ax;
 }
 
@@ -221,7 +222,7 @@ Scale *scal__alloc(int fgs_len, void *fragments)
 
 void ax_set_scale(Axis *axis, Scale *scale)
 {
-    Scale_print(scale);
+    // Scale_print(scale);
     rbt_add(axis->rbtree, scale);
 }
 
@@ -278,6 +279,7 @@ int ax_size(Axis *axis)
  * )+
  *
  */
+// TODO [2022-5-17 19:43:32] There seems to be a problem with this code
 int cell_cmp(void *cell, void *other)
 {
     unsigned long c_posi = *((unsigned long *)cell);
@@ -369,7 +371,8 @@ void Scale_print(Scale *s)
 {
     printf("Scale <%p> [ fragments_len = %d ] ", s, s->fragments_len);
     int i;
-    for (i=0;i<s->fragments_len;i++) {
+    for (i = 0; i < s->fragments_len; i++)
+    {
         printf("  %lu", s->fragments[i]);
     }
     printf("\n");
@@ -441,7 +444,8 @@ double *vce_vactors_values(MddTuple **tuples_matrix_h, unsigned long v_len)
     return result;
 }
 
-void *__set_ax_max_path_len(RBNode *node, void *param) {
+void *__set_ax_max_path_len(RBNode *node, void *param)
+{
     Scale *scale = node->obj;
     unsigned int *ax_max_len = param;
     if (scale->fragments_len > *ax_max_len)
@@ -449,17 +453,20 @@ void *__set_ax_max_path_len(RBNode *node, void *param) {
     return NULL;
 }
 
-void *__Axis_build_index(RBNode *node, void *axis) {
+void *__Axis_build_index(RBNode *node, void *axis)
+{
     Scale *scale = node->obj;
     Axis *ax = axis;
     memcpy(ax->index + node->index * ax->max_path_len * sizeof(md_gid), scale->fragments, scale->fragments_len * sizeof(md_gid));
     return NULL;
 }
 
-void CoordinateSystem__gen_auxiliary_index(CoordinateSystem *coor) {
+void CoordinateSystem__gen_auxiliary_index(CoordinateSystem *coor)
+{
     unsigned int i, ax_sz = als_size(coor->axes);
-    for (i=0;i<ax_sz;i++) {
-        Axis *ax = als_get(coor->axes,i);
+    for (i = 0; i < ax_sz; i++)
+    {
+        Axis *ax = als_get(coor->axes, i);
         RedBlackTree *tree = ax->rbtree;
         // printf("[debug] +++++++++++++++++ ax->max_path_len = < %u >\n",ax->max_path_len);
         rbt__scan_do(tree, &(ax->max_path_len), __set_ax_max_path_len);
@@ -469,34 +476,103 @@ void CoordinateSystem__gen_auxiliary_index(CoordinateSystem *coor) {
         rbt__scan_do(tree, ax, __Axis_build_index);
         // printf("[debug] +++++++++++++++++ CoordinateSystem__gen_auxiliary_index < %u > < %d >\n",i,rbt__size(tree));
         // code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        printf("\n#####################################################################################################\n");
-        int _i, _j;
-        for (_i=0;_i<rbt__size(tree);_i++) {
-            for (_j=0;_j<ax->max_path_len;_j++) {
-                printf("%lu  ", ((md_gid *)ax->index)[ _i * ax->max_path_len + _j ]);
-            }
-            printf("\n");
-        }
-        printf("#####################################################################################################\n\n");
+        // printf("\n#####################################################################################################\n");
+        // int _i, _j;
+        // for (_i=0;_i<rbt__size(tree);_i++) {
+        //     for (_j=0;_j<ax->max_path_len;_j++) {
+        //         printf("%lu  ", ((md_gid *)ax->index)[ _i * ax->max_path_len + _j ]);
+        //     }
+        //     printf("\n");
+        // }
+        // printf("#####################################################################################################\n\n");
         // code for testing ? >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     }
 }
 
-void CoordinateSystem__calculate_offset(CoordinateSystem *coor) {
-    unsigned int i, ax_sz = als_size(coor->axes);
-    Axis *ax_n, *ax = als_get(coor->axes,ax_sz - 1);
+void CoordinateSystem__calculate_offset(CoordinateSystem *coor)
+{
+    int i, ax_sz = als_size(coor->axes);
+    Axis *ax_n, *ax = als_get(coor->axes, ax_sz - 1);
     ax->coor_offset = 1;
 
-    if (ax_sz < 2)
-        return;
-
-    for (i=ax_sz - 2;i>=0;i--) {
-        ax = als_get(coor->axes,i);
-        ax_n = als_get(coor->axes,i+1);
+    for (i = ax_sz - 2; i >= 0; i--)
+    {
+        ax = als_get(coor->axes, i);
+        ax_n = als_get(coor->axes, i + 1);
         ax->coor_offset = ax_size(ax_n) * ax_n->coor_offset;
-        if (i == 0)
-            break;
     }
+
+    int row, col;
+    // md_gid id, prev_id = 0;
+    for (i = 0; i < ax_sz; i++)
+    {
+        Axis *axis = als_get(coor->axes, i);
+        int tree_sz = rbt__size(axis->rbtree);
+        ScaleOffsetRange *sor = NULL;
+        md_gid id, prev_id = 0;
+
+        // code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        // ArrayList *sor_ls = als_create(1024, "ScaleOffsetRange *");
+        // code for testing ? >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+        for (col = 0; col < axis->max_path_len; col++)
+        {
+            for (row = 0; row < tree_sz; row++)
+            {
+                id = ((md_gid *)axis->index)[row * axis->max_path_len + col];
+
+                if (sor == NULL || id != prev_id)
+                {
+                    sor = ScaleOffsetRange_create();
+                    sor->gid = id;
+                    sor->end_position = sor->start_position = row;
+                    sor->start_offset = sor->end_offset = row * axis->coor_offset;
+                    rbt_add(axis->sor_idx_tree, sor);
+                }
+                else
+                {
+                    sor->end_position = row;
+                    sor->end_offset = row * axis->coor_offset;
+                }
+
+                prev_id = id;
+
+                // if (id != prev_id)
+                // {
+
+                //     if (sor)
+                //         rbt_add(axis->sor_idx_tree, sor);
+
+                //     prev_id = id;
+                //     sor = ScaleOffsetRange_create();
+                //     // code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                //     // als_add(sor_ls, sor);
+                //     // code for testing ? >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                //     sor->gid = id;
+                //     sor->end_position = sor->start_position = row;
+                // }
+                // else
+                // {
+                //     sor->end_position = row;
+                // }
+            }
+        }
+        rbt__reordering(axis->sor_idx_tree);
+        // code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        // printf("@@@@@@@@@########$$$$$$$$$$$$>>>>>>>>>>>>>>>>>>> %d\n", rbt__size(axis->sor_idx_tree));
+        // printf("@@@@@@@@@########$$$$$$$$$$$$>>>>>>>>>>>>>>>>>>>.............. %d\n", rbt__size(axis->rbtree));
+        // int _i;
+        // printf("+++++++++++++++++++++++@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
+        // for ( _i = 0; _i < als_size(sor_ls); _i++)
+        // {
+        //     ScaleOffsetRange *__sor = als_get(sor_ls, _i);
+        //     __sor->start_offset = axis->coor_offset * __sor->start_position;
+        //     __sor->end_offset = axis->coor_offset * __sor->end_position;
+        //     ScaleOffsetRange_print(__sor);
+        // }
+        // code for testing ? >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    }
+
     // code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // for (i=0;i<ax_sz;i++) {
     //     ax = als_get(coor->axes,i);
@@ -505,22 +581,83 @@ void CoordinateSystem__calculate_offset(CoordinateSystem *coor) {
     // code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 }
 
-static double do_calculate_measure_value(Cube *cube, MddTuple *tuple) {
+static double do_calculate_measure_value(Cube *cube, MddTuple *tuple)
+{
+    printf("[ DEBUG ] <<<+++>>> - <<<+++>>> - <<<+++>>> - <<<+++>>> - <<<+++>>> - <<<+++>>> - <<<+++>>> - <<<+++>>> - <<<+++>>>\n");
     // TODO
-    printf("[ do_calculate_measure_value ] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-    printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n");
+    // printf("[ do_calculate_measure_value ] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+    // printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n");
 
-    int i, sz = als_size(tuple->mr_ls);
+    int i;
+    int sz = als_size(tuple->mr_ls);
+    int coor_count = als_size(coor_sys_ls);
 
-    for (i=0;i<sz;i++) {
-        MddMemberRole *mr = als_get(tuple->mr_ls,i);
-        DimensionRole *dr = mr->dim_role;
-        if (dr)
-            printf("DR - [ %s ] sn = %d\n",dr->name  , dr->sn);
+    CoordinateSystem *coor;
+
+    for (i = 0; i < coor_count; i++)
+    {
+        coor = als_get(coor_sys_ls, i);
+        if (coor->id == cube->gid)
+        {
+            break;
+        }
         else
-            printf("DR - measure DR\n");
+        {
+            coor = NULL;
+        }
     }
 
-    printf("\n\n");
+    for (i = 0; i < sz; i++)
+    {
+        MddMemberRole *mr = als_get(tuple->mr_ls, i);
+        DimensionRole *dr = mr->dim_role;
+
+        // continue measure member role
+        if (dr == NULL)
+            continue;
+
+        Axis *ax = cs_get_axis(coor, i);
+
+        ScaleOffsetRange *key = ScaleOffsetRange_create();
+        key->gid = mr->member->gid;
+
+        RBNode *node = rbt__find(ax->sor_idx_tree, key);
+
+        // printf("[ DEBUG ] !!!!!!!!!@@@@@@@@###########--------->>>>>>>>         (ScaleOffsetRange *)key->gid = %ld\n", key->gid);
+        ScaleOffsetRange *sor = (ScaleOffsetRange *)node->obj;
+
+        ScaleOffsetRange_print(sor);
+
+        // if (dr)
+        //     printf("DR - [ %s ] sn = %d\n",dr->name  , dr->sn);
+        // else
+        //     printf("DR - measure DR\n");
+    }
+
+    // printf("\n\n");
     return 0;
+}
+
+ScaleOffsetRange *ScaleOffsetRange_create()
+{
+    return mem_alloc_0(sizeof(ScaleOffsetRange));
+}
+
+void ScaleOffsetRange_print(ScaleOffsetRange *sor)
+{
+    printf("[ ScaleOffsetRange %p ] gid = %lu, position [ %lu, %lu ], offset [ %lu, %lu ]\n", sor, sor->gid, sor->start_position, sor->end_position, sor->start_offset, sor->end_offset);
+}
+
+int ScaleOffsetRange_cmp(void *_obj, void *_other)
+{
+    ScaleOffsetRange *obj = (ScaleOffsetRange *)_obj;
+    ScaleOffsetRange *other = (ScaleOffsetRange *)_other;
+    return other->gid < obj->gid ? -1 : (other->gid > obj->gid ? 1 : 0);
+}
+
+void *ScaleOffsetRange_destory(void *sor)
+{
+    // TODO 2022年5月17日20:00:05
+    // printf("[ func - ScaleOffsetRange_destory ] This function has not been implemented yet.\n");
+    return NULL;
 }

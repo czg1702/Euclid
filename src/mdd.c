@@ -48,6 +48,7 @@ Dimension *create_dimension(char *dim_name)
 	Dimension *dim = (Dimension *)mem_alloc_0(sizeof(Dimension));
 	dim->gid = gen_md_gid();
 	memcpy(dim->name, dim_name, strlen(dim_name));
+	printf("[INFO] create dimension [ %ld ] %s\n",dim->gid,dim->name);
 
 	// 2 - save the dim-obj into a persistent file.
 	append_file_data(META_DEF_DIMS_FILE_PATH, (char *)dim, sizeof(Dimension));
@@ -231,6 +232,8 @@ Member *_new_member(char *name, md_gid dim_gid, md_gid parent_gid, __u_short lv)
 	mbr->dim_gid = dim_gid;
 	mbr->p_gid = parent_gid;
 	mbr->lv = lv;
+	printf("[INFO] new Member - dim_gid [ %ld ] p_gid [% 17ld ] gid [ %ld ] name [ %s ] lv [ %d ]\n",mbr->dim_gid,mbr->p_gid,mbr->gid,mbr->name,mbr->lv);
+
 	// printf("******************************** mbr->name %s\n", mbr->name);
 	// Code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// printf("// Code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
@@ -253,6 +256,7 @@ int build_cube(char *name, ArrayList *dim_role_ls, ArrayList *measures)
 	cube->gid = gen_md_gid();
 	cube->dim_role_ls = als_create(24, "DimensionRole *");
 	cube->measure_mbrs = als_create(12, "Member *");
+	printf("[INFO] new Cube - gid [ %ld ] name [ %s ]\n", cube->gid, cube->name);
 
 	// Create several dimensional role objects and associate them to the cube.
 	size_t i, dr_sz = als_size(dim_role_ls);
@@ -268,6 +272,8 @@ int build_cube(char *name, ArrayList *dim_role_ls, ArrayList *measures)
 		d_role->gid = gen_md_gid();
 		d_role->cube_gid = cube->gid;
 		d_role->dim_gid = dim->gid;
+		printf("[INFO] new DimensionRole - Cube [ %ld % 16s ] Dim [ %ld % 16s ] DR [ %ld % 16s ]\n", 
+			cube->gid, cube->name, dim->gid, dim->name, d_role->gid, d_role->name);
 
 		als_add(cube->dim_role_ls, d_role);
 	}
