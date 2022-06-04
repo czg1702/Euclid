@@ -1,14 +1,7 @@
-// #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-// #include <sys/stat.h>
-// #include <unistd.h>
 
 #include "mdd.h"
-// #include "mdx.h"
-// #include "command.h"
-// #include "cfg.h"
-// #include "net.h"
 #include "vce.h"
 #include "utils.h"
 
@@ -32,8 +25,6 @@ int vce_append(EuclidCommand *ec)
     __uint64_t cs_id = *((__uint64_t *)slide_over_mem(data, sizeof(__uint64_t), &i));
     __uint32_t axes_count = *((__uint32_t *)slide_over_mem(data, sizeof(__uint32_t), &i));
     __uint32_t vals_count = *((__uint32_t *)slide_over_mem(data, sizeof(__uint32_t), &i));
-
-    // printf("cs_id %lu, axes_count %ld, vals_count %ld\n", cs_id, axes_count, vals_count);
 
     CoordinateSystem *cs;
     int j, csz = als_size(coor_sys_ls);
@@ -72,14 +63,6 @@ f_0:
         {
             __uint32_t coor_pointer_len = *((__uint32_t *)slide_over_mem(data, sizeof(__uint32_t), &i));
             void *fragments = slide_over_mem(data, coor_pointer_len * sizeof(__uint64_t), &i);
-            // // Code for testing >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-            // int i___;
-            // for (i___ = 0; i___ < coor_pointer_len; i___++)
-            // {
-            //     printf("%lu  ", ((md_gid *)fragments)[i___]);
-            // }
-            // printf("\n");
-            // // Code for testing >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
             // In the new data range, traverse all the scales of each coordinate axis, and store all of them in the corresponding axis file.
             char axis_meta_file[128];
@@ -363,7 +346,6 @@ __uint64_t cs_axis_span(CoordinateSystem *cs, int axis_order)
 
 void space_add_measure(MeasureSpace *space, __uint64_t measure_position, void *cell)
 {
-    // // // printf("[debug] space_add_measure ()    %lu\n", *((unsigned long *)cell));
     rbt_add(space->tree_ls_h[measure_position / space->segment_scope], cell);
 }
 
@@ -404,10 +386,6 @@ double *vce_vactors_values(MddTuple **tuples_matrix_h, unsigned long v_len)
     MddMemberRole *mr_0 = als_get(tuples_matrix_h[0]->mr_ls, 0);
     Cube *cube = find_cube_by_gid(mr_0->dim_role->cube_gid);
 
-    // code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    // Cube_print(cube);
-    // code for testing ? >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
     unsigned long i, j;
 
     CoordinateSystem *coor = NULL;
@@ -431,9 +409,7 @@ double *vce_vactors_values(MddTuple **tuples_matrix_h, unsigned long v_len)
             Member *m = mr->member;
             if (!m->abs_path)
                 mdd__gen_mbr_abs_path(m);
-            // Member_print(m);
         }
-        // Tuple_print(tuple);
     }
 
     double *result = mem_alloc_0(v_len * sizeof(double));
@@ -468,24 +444,9 @@ void CoordinateSystem__gen_auxiliary_index(CoordinateSystem *coor)
     {
         Axis *ax = als_get(coor->axes, i);
         RedBlackTree *tree = ax->rbtree;
-        // printf("[debug] +++++++++++++++++ ax->max_path_len = < %u >\n",ax->max_path_len);
         rbt__scan_do(tree, &(ax->max_path_len), __set_ax_max_path_len);
-        // printf("[debug] +++++++++++++++++ CoordinateSystem__gen_auxiliary_index < %u > < %d >\n",i,rbt__size(tree));
-        // printf("[debug] +++++++++++++++++ ax->max_path_len = < %u >\n",ax->max_path_len);
         ax->index = mem_alloc_0(rbt__size(tree) * ax->max_path_len * sizeof(md_gid));
         rbt__scan_do(tree, ax, __Axis_build_index);
-        // printf("[debug] +++++++++++++++++ CoordinateSystem__gen_auxiliary_index < %u > < %d >\n",i,rbt__size(tree));
-        // code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        // printf("\n#####################################################################################################\n");
-        // int _i, _j;
-        // for (_i=0;_i<rbt__size(tree);_i++) {
-        //     for (_j=0;_j<ax->max_path_len;_j++) {
-        //         printf("%lu  ", ((md_gid *)ax->index)[ _i * ax->max_path_len + _j ]);
-        //     }
-        //     printf("\n");
-        // }
-        // printf("#####################################################################################################\n\n");
-        // code for testing ? >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     }
 }
 
@@ -503,17 +464,12 @@ void CoordinateSystem__calculate_offset(CoordinateSystem *coor)
     }
 
     int row, col;
-    // md_gid id, prev_id = 0;
     for (i = 0; i < ax_sz; i++)
     {
         Axis *axis = als_get(coor->axes, i);
         int tree_sz = rbt__size(axis->rbtree);
         ScaleOffsetRange *sor = NULL;
         md_gid id, prev_id = 0;
-
-        // code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        // ArrayList *sor_ls = als_create(1024, "ScaleOffsetRange *");
-        // code for testing ? >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
         for (col = 0; col < axis->max_path_len; col++)
         {
@@ -536,58 +492,15 @@ void CoordinateSystem__calculate_offset(CoordinateSystem *coor)
                 }
 
                 prev_id = id;
-
-                // if (id != prev_id)
-                // {
-
-                //     if (sor)
-                //         rbt_add(axis->sor_idx_tree, sor);
-
-                //     prev_id = id;
-                //     sor = ScaleOffsetRange_create();
-                //     // code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-                //     // als_add(sor_ls, sor);
-                //     // code for testing ? >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-                //     sor->gid = id;
-                //     sor->end_position = sor->start_position = row;
-                // }
-                // else
-                // {
-                //     sor->end_position = row;
-                // }
             }
         }
         rbt__reordering(axis->sor_idx_tree);
-        // code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        // printf("@@@@@@@@@########$$$$$$$$$$$$>>>>>>>>>>>>>>>>>>> %d\n", rbt__size(axis->sor_idx_tree));
-        // printf("@@@@@@@@@########$$$$$$$$$$$$>>>>>>>>>>>>>>>>>>>.............. %d\n", rbt__size(axis->rbtree));
-        // int _i;
-        // printf("+++++++++++++++++++++++@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
-        // for ( _i = 0; _i < als_size(sor_ls); _i++)
-        // {
-        //     ScaleOffsetRange *__sor = als_get(sor_ls, _i);
-        //     __sor->start_offset = axis->coor_offset * __sor->start_position;
-        //     __sor->end_offset = axis->coor_offset * __sor->end_position;
-        //     ScaleOffsetRange_print(__sor);
-        // }
-        // code for testing ? >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     }
-
-    // code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    // for (i=0;i<ax_sz;i++) {
-    //     ax = als_get(coor->axes,i);
-    //     printf("[debug] +++++++++++++++++ ax->coor_offset = < %lu >\n",ax->coor_offset);
-    // }
-    // code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 }
 
 static double do_calculate_measure_value(Cube *cube, MddTuple *tuple)
 {
-    printf("[ DEBUG ] <<<+++>>> - <<<+++>>> - <<<+++>>> - <<<+++>>> - <<<+++>>> - <<<+++>>> - <<<+++>>> - <<<+++>>> - <<<+++>>>\n");
     // TODO
-    // printf("[ do_calculate_measure_value ] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-    // printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n");
-
     int i;
     int sz = als_size(tuple->mr_ls);
     int coor_count = als_size(coor_sys_ls);
@@ -623,18 +536,11 @@ static double do_calculate_measure_value(Cube *cube, MddTuple *tuple)
 
         RBNode *node = rbt__find(ax->sor_idx_tree, key);
 
-        // printf("[ DEBUG ] !!!!!!!!!@@@@@@@@###########--------->>>>>>>>         (ScaleOffsetRange *)key->gid = %ld\n", key->gid);
         ScaleOffsetRange *sor = (ScaleOffsetRange *)node->obj;
 
         ScaleOffsetRange_print(sor);
-
-        // if (dr)
-        //     printf("DR - [ %s ] sn = %d\n",dr->name  , dr->sn);
-        // else
-        //     printf("DR - measure DR\n");
     }
 
-    // printf("\n\n");
     return 0;
 }
 
