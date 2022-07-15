@@ -178,8 +178,17 @@ static void _rbt__scan_nodes_do(RBNode *n, void *callback_param, void *(*callbac
 void rbt__scan_do(RedBlackTree *t, void *callback_param, void *(*callback)(RBNode *node, void *param))
 {
 	// // // printf("[debug] rbt__scan_do - rbt__size(t) = %d\n", rbt__size(t));
+
+	// printf("[ debug ] ########################################################################################\n");
+	// printf("[ debug ] rbt__scan_do( %p ) ..................... begin\n", t);
+	// printf("[ debug ] ########################################################################################\n");
+
 	if (t->root)
 		_rbt__scan_nodes_do(t->root, callback_param, callback);
+		
+	// printf("[ debug ] ########################################################################################\n");
+	// printf("[ debug ] rbt__scan_do( %p ) ..................... finished\n", t);
+	// printf("[ debug ] ########################################################################################\n");
 }
 
 void rbt_set_node_color(RBNode *n, char color)

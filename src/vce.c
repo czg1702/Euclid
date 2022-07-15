@@ -10,6 +10,10 @@ static ArrayList *space_ls;
 
 static double do_calculate_measure_value(Cube *, MddTuple *);
 
+static void _do_calculate_measure_value(MeasureSpace *space, ArrayList *sor_ls, int deep, unsigned long offset, double *val);
+
+static double MeasureSpace_coordinate_intersection_value(MeasureSpace *space, unsigned long index);
+
 void vce_init()
 {
     coor_sys_ls = als_create(16, "CoordinateSystem *");
@@ -268,9 +272,9 @@ int cell_cmp(void *cell, void *other)
     unsigned long c_posi = *((unsigned long *)cell);
     unsigned long o_posi = *((unsigned long *)other);
     if (o_posi > c_posi)
-        return 1;
-    if (o_posi < c_posi)
         return -1;
+    if (o_posi < c_posi)
+        return 1;
     return 0;
 }
 
@@ -287,6 +291,7 @@ MeasureSpace *space_create(size_t segment_count, size_t segment_scope, int cell_
     s->segment_scope = segment_scope;
     s->tree_ls_h = mem_alloc_0(sizeof(RedBlackTree *) * segment_count);
     s->data_ls_h = mem_alloc_0(sizeof(void *) * segment_count);
+    s->data_lens = mem_alloc_0(sizeof(unsigned long) * segment_count);
 
     int i;
     for (i = 0; i < segment_count; i++)
@@ -297,9 +302,13 @@ MeasureSpace *space_create(size_t segment_count, size_t segment_scope, int cell_
 
 void *build_space_measure(RBNode *node, void *callback_params)
 {
-    int cell_size = *((int *)callback_params); // bytes count
+    // printf("[ debug ] ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+	// printf("[ debug ] build_space_measure(%p, %p)\n", node, callback_params);
+    // printf("[ debug ] ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+
+    int cell_size = *((int *)callback_params) + sizeof(long); // bytes count
     void *block_addr = *((void **)(callback_params + sizeof(int)));
-    memcpy(block_addr + cell_size * (node->index), node->obj + sizeof(long), cell_size);
+    memcpy(block_addr + cell_size * (node->index), node->obj, cell_size);
 }
 
 void space_plan(MeasureSpace *space)
@@ -312,6 +321,8 @@ void space_plan(MeasureSpace *space)
 
         int cell_size = space->cell_vals_count * (sizeof(double) + sizeof(char));
         unsigned int actual_cells_sz = rbt__size(tree);
+        space->data_lens[i] = actual_cells_sz;
+// printf("[ debug ] ****************** actual_cells_sz = %u *************************************************\n", actual_cells_sz);
         int posi_cell_sz = (sizeof(unsigned long) + cell_size);
         space->data_ls_h[i] = mem_alloc_0(actual_cells_sz * posi_cell_sz);
 
@@ -481,6 +492,7 @@ void CoordinateSystem__calculate_offset(CoordinateSystem *coor)
                 {
                     sor = ScaleOffsetRange_create();
                     sor->gid = id;
+                    sor->offset = axis->coor_offset;
                     sor->end_position = sor->start_position = row;
                     sor->start_offset = sor->end_offset = row * axis->coor_offset;
                     rbt_add(axis->sor_idx_tree, sor);
@@ -500,6 +512,7 @@ void CoordinateSystem__calculate_offset(CoordinateSystem *coor)
 
 static double do_calculate_measure_value(Cube *cube, MddTuple *tuple)
 {
+    // printf("@@@ --- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
     // TODO
     int i;
     int sz = als_size(tuple->mr_ls);
@@ -520,6 +533,8 @@ static double do_calculate_measure_value(Cube *cube, MddTuple *tuple)
         }
     }
 
+    ArrayList *sor_ls = als_create(64, "ScaleOffsetRange *");
+
     for (i = 0; i < sz; i++)
     {
         MddMemberRole *mr = als_get(tuple->mr_ls, i);
@@ -538,10 +553,53 @@ static double do_calculate_measure_value(Cube *cube, MddTuple *tuple)
 
         ScaleOffsetRange *sor = (ScaleOffsetRange *)node->obj;
 
-        ScaleOffsetRange_print(sor);
+        // printf("[ DEBUG ] %d\n", i);
+        // coor_offset
+        // printf("[ DEBUG ] ax->coor_offset = %lu\n", ax->coor_offset);
+
+        // ScaleOffsetRange_print(sor);
+
+        als_add(sor_ls,sor);
     }
 
-    return 0;
+    MeasureSpace *space;
+    for (i = 0; i < als_size(space_ls); i++) {
+        space = (MeasureSpace *) als_get(space_ls, i);
+        if (space->id = cube->gid)
+            break;
+    }
+
+    // i = 0;
+    // int sor_ls_size = als_size(sor_ls);
+    // unsigned long val_idx = 0;
+    // while (1) {
+    //     ScaleOffsetRange *sor = (ScaleOffsetRange *)als_get(sor_ls, i);
+    //     unsigned long _position;
+    //     for (_position = sor->start_position; _position < sor->end_position; _position++)
+    //     {
+    //         /* code */
+    //     }
+    // }
+
+    double val = 0.0;
+    _do_calculate_measure_value(space, sor_ls, 0, 0, &val);
+    return val;
+}
+
+static void _do_calculate_measure_value(MeasureSpace *space, ArrayList *sor_ls, int deep, unsigned long offset, double *val) {
+    ScaleOffsetRange *sor = (ScaleOffsetRange *)als_get(sor_ls, deep);
+    unsigned long _position;
+    for (_position = sor->start_position; _position <= sor->end_position; _position++)
+    {
+        if (deep == (als_size(sor_ls) - 1)) {
+            // printf("[ DEBUG ] XXXXXXXXXXXXXXXXXXXXXXXXXXXX.................  %lu\n", offset + _position * sor->offset);
+            double ci_val = MeasureSpace_coordinate_intersection_value(space, offset + _position * sor->offset);
+printf("[ debug ]                                                                                                  ci_val = %f\n", ci_val);
+            *val += ci_val;
+        } else {
+            _do_calculate_measure_value(space, sor_ls, deep + 1, offset + _position * sor->offset, val);
+        }
+    }
 }
 
 ScaleOffsetRange *ScaleOffsetRange_create()
@@ -566,4 +624,64 @@ void *ScaleOffsetRange_destory(void *sor)
     // TODO 2022年5月17日20:00:05
     // printf("[ func - ScaleOffsetRange_destory ] This function has not been implemented yet.\n");
     return NULL;
+}
+
+static double MeasureSpace_coordinate_intersection_value(MeasureSpace *space, unsigned long index) {
+    // TODO 已知确定索引，在space中查找值
+    // 熟悉 MeasureSpace 结构
+    // 找到数据所在的块
+
+    unsigned long segment_num = index / space->segment_scope;
+    if (segment_num != 0 && !(index % space->segment_scope))
+        --segment_num;
+    
+    unsigned long cells_count = space->data_lens[segment_num];
+
+    unsigned long range_start = 0;
+    unsigned long range_end   = cells_count - 1;
+
+    char *data = space->data_ls_h[segment_num];
+
+    int a_cell_bytes_count = space->cell_vals_count * (sizeof(double) + sizeof(char)) + sizeof(unsigned long);
+
+    unsigned long seg_cell_start_pos = *((unsigned long *)data);
+    unsigned long seg_cell_end_pos = *((unsigned long *)(data + range_end * a_cell_bytes_count));
+
+    if ( index < seg_cell_start_pos || index > seg_cell_end_pos )
+        return 0.0; // TODO Should not return zero; should return a message indicating that no such value was found.
+    
+    while (1) {
+
+        if (range_end - range_start > 1) {
+            unsigned long range_mid = (range_start + range_end) / 2;
+            unsigned long seg_cell_mid_pos = *((unsigned long *)(data + range_mid * a_cell_bytes_count));
+
+            if (seg_cell_mid_pos == index)
+                return 66.88; // TODO it should return the true value according to the measure member
+
+            if (index < seg_cell_mid_pos)
+                range_end = range_mid - 1;
+            else
+                range_start = range_mid + 1;
+
+        } else {
+            seg_cell_start_pos = *((unsigned long *)(data + range_start * a_cell_bytes_count));
+
+            if (seg_cell_start_pos == index)
+                return 55.55; // TODO it should return the true value according to the measure member
+
+            seg_cell_end_pos = *((unsigned long *)(data + range_end * a_cell_bytes_count));
+
+            if (seg_cell_end_pos == index)
+                return 99.99; // TODO it should return the true value according to the measure member
+
+            break;
+        }
+    }
+
+    // printf("[ debug ] ---------------------------               ----------------------------------------------------------------------------- cells_count = %lu\n", cells_count);
+
+    /* 使用二分法查找，没有就返回0
+    */
+    return 0.0; // TODO Should not return zero; should return a message indicating that no such value was found.
 }

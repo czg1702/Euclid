@@ -65,6 +65,8 @@ typedef struct _scale_offset_range
     unsigned long start_position;
     unsigned long end_position;
 
+    unsigned long offset;
+
     unsigned long start_offset;
     unsigned long end_offset;
 } ScaleOffsetRange;
@@ -90,6 +92,7 @@ typedef struct _measure_space_
     size_t segment_scope;
     RedBlackTree **tree_ls_h;
     void **data_ls_h;
+    unsigned long *data_lens;
     int cell_vals_count;
 } MeasureSpace;
 
