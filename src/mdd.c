@@ -48,7 +48,7 @@ Dimension *create_dimension(char *dim_name)
 	Dimension *dim = (Dimension *)mem_alloc_0(sizeof(Dimension));
 	dim->gid = gen_md_gid();
 	memcpy(dim->name, dim_name, strlen(dim_name));
-	printf("[INFO] create dimension [ %ld ] %s\n",dim->gid,dim->name);
+	printf("[INFO] create dimension [ %ld ] %s\n", dim->gid, dim->name);
 
 	// 2 - save the dim-obj into a persistent file.
 	append_file_data(META_DEF_DIMS_FILE_PATH, (char *)dim, sizeof(Dimension));
@@ -232,7 +232,7 @@ Member *_new_member(char *name, md_gid dim_gid, md_gid parent_gid, __u_short lv)
 	mbr->dim_gid = dim_gid;
 	mbr->p_gid = parent_gid;
 	mbr->lv = lv;
-	printf("[INFO] new Member - dim_gid [ %ld ] p_gid [% 17ld ] gid [ %ld ] name [ %s ] lv [ %d ]\n",mbr->dim_gid,mbr->p_gid,mbr->gid,mbr->name,mbr->lv);
+	printf("[INFO] new Member - dim_gid [ %ld ] p_gid [% 17ld ] gid [ %ld ] name [ %s ] lv [ %d ]\n", mbr->dim_gid, mbr->p_gid, mbr->gid, mbr->name, mbr->lv);
 
 	// printf("******************************** mbr->name %s\n", mbr->name);
 	// Code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -272,8 +272,8 @@ int build_cube(char *name, ArrayList *dim_role_ls, ArrayList *measures)
 		d_role->gid = gen_md_gid();
 		d_role->cube_gid = cube->gid;
 		d_role->dim_gid = dim->gid;
-		printf("[INFO] new DimensionRole - Cube [ %ld % 16s ] Dim [ %ld % 16s ] DR [ %ld % 16s ]\n", 
-			cube->gid, cube->name, dim->gid, dim->name, d_role->gid, d_role->name);
+		printf("[INFO] new DimensionRole - Cube [ %ld % 16s ] Dim [ %ld % 16s ] DR [ %ld % 16s ]\n",
+			   cube->gid, cube->name, dim->gid, dim->name, d_role->gid, d_role->name);
 
 		als_add(cube->dim_role_ls, d_role);
 	}
@@ -749,26 +749,38 @@ MddMemberRole *ids_mbrsdef__build(MemberDef *m_def, MddTuple *context_tuple, Cub
 		DimensionRole *dr = cube__dim_role(cube, dim_role_name);
 		Dimension *dim;
 
-		int i, dims_pool_size = als_size(dims_pool);
-		for (i = 0; i < dims_pool_size; i++)
-		{
-			dim = (Dimension *)als_get(dims_pool, i);
-			if (dim->gid == dr->dim_gid)
-				break;
+		if (dr)
+		{ // dim is not measure dimension
+			int i, dims_pool_size = als_size(dims_pool);
+			for (i = 0; i < dims_pool_size; i++)
+			{
+				dim = (Dimension *)als_get(dims_pool, i);
+				if (dim->gid == dr->dim_gid)
+					break;
+			}
+
+			ArrayList *mbr_path = als_create(32, "char *");
+			int ap_len = als_size(m_def->mbr_abs_path);
+			for (i = 1; i < ap_len; i++)
+			{
+				als_add(mbr_path, als_get(m_def->mbr_abs_path, i));
+			}
+
+			Member *mbr = dim__find_mbr(dim, mbr_path);
+			MddMemberRole *mr = mdd_mr__create(mbr, dr);
+			return mr;
 		}
-
-		ArrayList *mbr_path = als_create(32, "char *");
-		int ap_len = als_size(m_def->mbr_abs_path);
-		for (i = 1; i < ap_len; i++)
-		{
-			als_add(mbr_path, als_get(m_def->mbr_abs_path, i));
+		else
+		{ // measure dimension
+			char *mea_m_name = als_get(m_def->mbr_abs_path, 1);
+			int i, mea_m_count = als_size(cube->measure_mbrs);
+			for (i = 0; i < mea_m_count; i++)
+			{
+				Member *mbr = (Member *)als_get(cube->measure_mbrs, i);
+				if (strcmp(mbr->name, mea_m_name) == 0)
+					return mdd_mr__create(mbr, dr);
+			}
 		}
-
-		Member *mbr = dim__find_mbr(dim, mbr_path);
-
-		MddMemberRole *mr = mdd_mr__create(mbr, dr);
-
-		return mr;
 	}
 	else
 	{

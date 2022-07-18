@@ -10,9 +10,9 @@ static ArrayList *space_ls;
 
 static double do_calculate_measure_value(Cube *, MddTuple *);
 
-static void _do_calculate_measure_value(MeasureSpace *space, ArrayList *sor_ls, int deep, unsigned long offset, double *val);
+static void _do_calculate_measure_value(MeasureSpace *space, ArrayList *sor_ls, int deep, unsigned long offset, double *val, int mea_val_idx);
 
-static double MeasureSpace_coordinate_intersection_value(MeasureSpace *space, unsigned long index);
+static double MeasureSpace_coordinate_intersection_value(MeasureSpace *space, unsigned long index, int mea_val_idx);
 
 void vce_init()
 {
@@ -535,14 +535,18 @@ static double do_calculate_measure_value(Cube *cube, MddTuple *tuple)
 
     ArrayList *sor_ls = als_create(64, "ScaleOffsetRange *");
 
+    MddMemberRole *measure_mr;
+
     for (i = 0; i < sz; i++)
     {
         MddMemberRole *mr = als_get(tuple->mr_ls, i);
         DimensionRole *dr = mr->dim_role;
 
         // continue measure member role
-        if (dr == NULL)
+        if (dr == NULL) {
+            measure_mr = mr;
             continue;
+        }
 
         Axis *ax = cs_get_axis(coor, i);
 
@@ -562,6 +566,16 @@ static double do_calculate_measure_value(Cube *cube, MddTuple *tuple)
         als_add(sor_ls, sor);
     }
 
+    int mea_val_idx = 0;
+    Member *measure_m = measure_mr->member;
+    for (i = 0; i < als_size(cube->measure_mbrs); i++) {
+        Member *_m = (Member *)als_get(cube->measure_mbrs, i);
+        if (measure_m->gid == _m->gid) {
+            mea_val_idx = i;
+            break;
+        }
+    }
+printf("[ debug ] ++++++++++++++++//////////////////++++++++++++++++//////////////////   mea_val_idx = %d\n", mea_val_idx);
     MeasureSpace *space;
     for (i = 0; i < als_size(space_ls); i++)
     {
@@ -583,11 +597,11 @@ static double do_calculate_measure_value(Cube *cube, MddTuple *tuple)
     // }
 
     double val = 0.0;
-    _do_calculate_measure_value(space, sor_ls, 0, 0, &val);
+    _do_calculate_measure_value(space, sor_ls, 0, 0, &val, mea_val_idx);
     return val;
 }
 
-static void _do_calculate_measure_value(MeasureSpace *space, ArrayList *sor_ls, int deep, unsigned long offset, double *val)
+static void _do_calculate_measure_value(MeasureSpace *space, ArrayList *sor_ls, int deep, unsigned long offset, double *val, int mea_val_idx)
 {
     ScaleOffsetRange *sor = (ScaleOffsetRange *)als_get(sor_ls, deep);
     unsigned long _position;
@@ -596,13 +610,13 @@ static void _do_calculate_measure_value(MeasureSpace *space, ArrayList *sor_ls, 
         if (deep == (als_size(sor_ls) - 1))
         {
             // printf("[ DEBUG ] XXXXXXXXXXXXXXXXXXXXXXXXXXXX.................  %lu\n", offset + _position * sor->offset);
-            double ci_val = MeasureSpace_coordinate_intersection_value(space, offset + _position * sor->offset);
+            double ci_val = MeasureSpace_coordinate_intersection_value(space, offset + _position * sor->offset, mea_val_idx);
             printf("[ debug ]                                                                                                  ci_val = %f\n", ci_val);
             *val += ci_val;
         }
         else
         {
-            _do_calculate_measure_value(space, sor_ls, deep + 1, offset + _position * sor->offset, val);
+            _do_calculate_measure_value(space, sor_ls, deep + 1, offset + _position * sor->offset, val, mea_val_idx);
         }
     }
 }
@@ -631,7 +645,7 @@ void *ScaleOffsetRange_destory(void *sor)
     return NULL;
 }
 
-static double MeasureSpace_coordinate_intersection_value(MeasureSpace *space, unsigned long index)
+static double MeasureSpace_coordinate_intersection_value(MeasureSpace *space, unsigned long index, int mea_val_idx)
 {
     // TODO 已知确定索引，在space中查找值
     // 熟悉 MeasureSpace 结构
@@ -665,7 +679,8 @@ static double MeasureSpace_coordinate_intersection_value(MeasureSpace *space, un
             unsigned long seg_cell_mid_pos = *((unsigned long *)(data + range_mid * a_cell_bytes_count));
 
             if (seg_cell_mid_pos == index)
-                return 66.88; // TODO it should return the true value according to the measure member
+                return *((double *)(data + sizeof(unsigned long) + (sizeof(double) + sizeof(char)) * mea_val_idx));
+                // return 66.88;
 
             if (index < seg_cell_mid_pos)
                 range_end = range_mid - 1;
@@ -677,12 +692,14 @@ static double MeasureSpace_coordinate_intersection_value(MeasureSpace *space, un
             seg_cell_start_pos = *((unsigned long *)(data + range_start * a_cell_bytes_count));
 
             if (seg_cell_start_pos == index)
-                return 55.55; // TODO it should return the true value according to the measure member
+                return *((double *)(data + sizeof(unsigned long) + (sizeof(double) + sizeof(char)) * mea_val_idx));
+                // return 55.55;
 
             seg_cell_end_pos = *((unsigned long *)(data + range_end * a_cell_bytes_count));
 
             if (seg_cell_end_pos == index)
-                return 99.99; // TODO it should return the true value according to the measure member
+                return *((double *)(data + sizeof(unsigned long) + (sizeof(double) + sizeof(char)) * mea_val_idx));
+                // return 99.99;
 
             break;
         }
