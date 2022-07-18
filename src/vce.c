@@ -104,14 +104,21 @@ f_0:
     }
 
     // specify the partition rule of the logical multidimensional array.
-    __uint64_t partition_scope = space_capacity / SPACE_DEF_PARTITION_COUNT;
-    if (space_capacity % SPACE_DEF_PARTITION_COUNT)
-        partition_scope++;
+    // __uint64_t partition_scope = space_capacity / SPACE_DEF_PARTITION_COUNT;
+    // if (space_capacity % SPACE_DEF_PARTITION_COUNT)
+    //     partition_scope++;
 
-    printf("[debug] space_capacity < %lu >, SPACE_DEF_PARTITION_COUNT < %d >, partition_scope < %lu >\n", space_capacity, SPACE_DEF_PARTITION_COUNT, partition_scope);
+    size_t space_partition_count = space_capacity / SPACE_DEF_PARTITION_SPAN_MIN;
+    if (space_partition_count && (space_capacity % SPACE_DEF_PARTITION_SPAN_MIN)) {
+        ++space_partition_count;
+    } else {
+        space_partition_count = 1;
+    }
+
+    printf("[debug] space_capacity < %lu >, SPACE_DEF_PARTITION_COUNT < %d >, space_partition_count < %lu >\n", space_capacity, SPACE_DEF_PARTITION_COUNT, space_partition_count);
 
     // Creates a new logical multidimensional array object in memory.
-    MeasureSpace *space = space_create(SPACE_DEF_PARTITION_COUNT, partition_scope, vals_count);
+    MeasureSpace *space = space_create(space_partition_count, SPACE_DEF_PARTITION_SPAN_MIN, vals_count);
 
     // Traverse the data file and insert all measure data into the logical multidimensional array.
     FILE *data_f = open_file(data_file, "r");
@@ -644,7 +651,7 @@ static double MeasureSpace_coordinate_intersection_value(MeasureSpace *space, un
             unsigned long seg_cell_mid_pos = *((unsigned long *)(data + range_mid * a_cell_bytes_count));
 
             if (seg_cell_mid_pos == index)
-                return *((double *)(data + sizeof(unsigned long) + (sizeof(double) + sizeof(char)) * mea_val_idx));
+                return *((double *)(data + range_mid * a_cell_bytes_count + sizeof(unsigned long) + (sizeof(double) + sizeof(char)) * mea_val_idx));
 
             if (index < seg_cell_mid_pos)
                 range_end = range_mid - 1;
@@ -656,12 +663,12 @@ static double MeasureSpace_coordinate_intersection_value(MeasureSpace *space, un
             seg_cell_start_pos = *((unsigned long *)(data + range_start * a_cell_bytes_count));
 
             if (seg_cell_start_pos == index)
-                return *((double *)(data + sizeof(unsigned long) + (sizeof(double) + sizeof(char)) * mea_val_idx));
+                return *((double *)(data + range_start * a_cell_bytes_count + sizeof(unsigned long) + (sizeof(double) + sizeof(char)) * mea_val_idx));
 
             seg_cell_end_pos = *((unsigned long *)(data + range_end * a_cell_bytes_count));
 
             if (seg_cell_end_pos == index)
-                return *((double *)(data + sizeof(unsigned long) + (sizeof(double) + sizeof(char)) * mea_val_idx));
+                return *((double *)(data + range_end * a_cell_bytes_count + sizeof(unsigned long) + (sizeof(double) + sizeof(char)) * mea_val_idx));
 
             break;
         }
