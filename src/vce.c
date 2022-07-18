@@ -113,9 +113,6 @@ f_0:
     // Creates a new logical multidimensional array object in memory.
     MeasureSpace *space = space_create(SPACE_DEF_PARTITION_COUNT, partition_scope, vals_count);
 
-    // struct stat data_file_stat;
-    // file_stat(data_file, &data_file_stat);
-
     // Traverse the data file and insert all measure data into the logical multidimensional array.
     FILE *data_f = open_file(data_file, "r");
 
@@ -302,10 +299,6 @@ MeasureSpace *space_create(size_t segment_count, size_t segment_scope, int cell_
 
 void *build_space_measure(RBNode *node, void *callback_params)
 {
-    // printf("[ debug ] ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-    // printf("[ debug ] build_space_measure(%p, %p)\n", node, callback_params);
-    // printf("[ debug ] ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-
     int cell_size = *((int *)callback_params) + sizeof(long); // bytes count
     void *block_addr = *((void **)(callback_params + sizeof(int)));
     memcpy(block_addr + cell_size * (node->index), node->obj, cell_size);
@@ -322,7 +315,6 @@ void space_plan(MeasureSpace *space)
         int cell_size = space->cell_vals_count * (sizeof(double) + sizeof(char));
         unsigned int actual_cells_sz = rbt__size(tree);
         space->data_lens[i] = actual_cells_sz;
-        // printf("[ debug ] ****************** actual_cells_sz = %u *************************************************\n", actual_cells_sz);
         int posi_cell_sz = (sizeof(unsigned long) + cell_size);
         space->data_ls_h[i] = mem_alloc_0(actual_cells_sz * posi_cell_sz);
 
@@ -392,8 +384,6 @@ void space__destory(MeasureSpace *s)
 
 double *vce_vactors_values(MddTuple **tuples_matrix_h, unsigned long v_len)
 {
-    printf("// TODO ....................... %s:%d\n", __FILE__, __LINE__);
-
     MddMemberRole *mr_0 = als_get(tuples_matrix_h[0]->mr_ls, 0);
     Cube *cube = find_cube_by_gid(mr_0->dim_role->cube_gid);
 
@@ -512,8 +502,6 @@ void CoordinateSystem__calculate_offset(CoordinateSystem *coor)
 
 static double do_calculate_measure_value(Cube *cube, MddTuple *tuple)
 {
-    // printf("@@@ --- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-    // TODO
     int i;
     int sz = als_size(tuple->mr_ls);
     int coor_count = als_size(coor_sys_ls);
@@ -557,12 +545,6 @@ static double do_calculate_measure_value(Cube *cube, MddTuple *tuple)
 
         ScaleOffsetRange *sor = (ScaleOffsetRange *)node->obj;
 
-        // printf("[ DEBUG ] %d\n", i);
-        // coor_offset
-        // printf("[ DEBUG ] ax->coor_offset = %lu\n", ax->coor_offset);
-
-        // ScaleOffsetRange_print(sor);
-
         als_add(sor_ls, sor);
     }
 
@@ -575,7 +557,7 @@ static double do_calculate_measure_value(Cube *cube, MddTuple *tuple)
             break;
         }
     }
-printf("[ debug ] ++++++++++++++++//////////////////++++++++++++++++//////////////////   mea_val_idx = %d\n", mea_val_idx);
+
     MeasureSpace *space;
     for (i = 0; i < als_size(space_ls); i++)
     {
@@ -583,18 +565,6 @@ printf("[ debug ] ++++++++++++++++//////////////////++++++++++++++++////////////
         if (space->id = cube->gid)
             break;
     }
-
-    // i = 0;
-    // int sor_ls_size = als_size(sor_ls);
-    // unsigned long val_idx = 0;
-    // while (1) {
-    //     ScaleOffsetRange *sor = (ScaleOffsetRange *)als_get(sor_ls, i);
-    //     unsigned long _position;
-    //     for (_position = sor->start_position; _position < sor->end_position; _position++)
-    //     {
-    //         /* code */
-    //     }
-    // }
 
     double val = 0.0;
     _do_calculate_measure_value(space, sor_ls, 0, 0, &val, mea_val_idx);
@@ -609,7 +579,6 @@ static void _do_calculate_measure_value(MeasureSpace *space, ArrayList *sor_ls, 
     {
         if (deep == (als_size(sor_ls) - 1))
         {
-            // printf("[ DEBUG ] XXXXXXXXXXXXXXXXXXXXXXXXXXXX.................  %lu\n", offset + _position * sor->offset);
             double ci_val = MeasureSpace_coordinate_intersection_value(space, offset + _position * sor->offset, mea_val_idx);
             printf("[ debug ]                                                                                                  ci_val = %f\n", ci_val);
             *val += ci_val;
@@ -647,10 +616,6 @@ void *ScaleOffsetRange_destory(void *sor)
 
 static double MeasureSpace_coordinate_intersection_value(MeasureSpace *space, unsigned long index, int mea_val_idx)
 {
-    // TODO 已知确定索引，在space中查找值
-    // 熟悉 MeasureSpace 结构
-    // 找到数据所在的块
-
     unsigned long segment_num = index / space->segment_scope;
     if (segment_num != 0 && !(index % space->segment_scope))
         --segment_num;
@@ -680,7 +645,6 @@ static double MeasureSpace_coordinate_intersection_value(MeasureSpace *space, un
 
             if (seg_cell_mid_pos == index)
                 return *((double *)(data + sizeof(unsigned long) + (sizeof(double) + sizeof(char)) * mea_val_idx));
-                // return 66.88;
 
             if (index < seg_cell_mid_pos)
                 range_end = range_mid - 1;
@@ -693,21 +657,15 @@ static double MeasureSpace_coordinate_intersection_value(MeasureSpace *space, un
 
             if (seg_cell_start_pos == index)
                 return *((double *)(data + sizeof(unsigned long) + (sizeof(double) + sizeof(char)) * mea_val_idx));
-                // return 55.55;
 
             seg_cell_end_pos = *((unsigned long *)(data + range_end * a_cell_bytes_count));
 
             if (seg_cell_end_pos == index)
                 return *((double *)(data + sizeof(unsigned long) + (sizeof(double) + sizeof(char)) * mea_val_idx));
-                // return 99.99;
 
             break;
         }
     }
 
-    // printf("[ debug ] ---------------------------               ----------------------------------------------------------------------------- cells_count = %lu\n", cells_count);
-
-    /* 使用二分法查找，没有就返回0
-     */
     return 0.0; // TODO Should not return zero; should return a message indicating that no such value was found.
 }
