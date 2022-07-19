@@ -59,6 +59,10 @@ on	{
 	return ON;
 }
 
+where	{
+	return WHERE;
+}
+
 [_a-zA-Z][_a-zA-Z0-9]*	{
 	//printf("-------> token yytext[%s] yyleng[%d]\n", yytext, yyleng);
 	return VAR;

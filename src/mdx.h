@@ -83,6 +83,7 @@ typedef struct select_definition
 {
     CubeDef *cube_def;
     ArrayList *ax_def_ls;
+    TupleDef *where_tuple_def;
 } SelectDef;
 
 SelectDef *ids_selectdef_new(CubeDef *, ArrayList *);

@@ -506,7 +506,12 @@ void *exe_multi_dim_queries(SelectDef *select_def)
 	}
 
 	Cube *cube = select_def__get_cube(select_def);
+
 	MddTuple *basic_tuple = cube__basic_ref_vector(cube);
+	if (select_def->where_tuple_def) {
+		MddTuple *where_tuple = ids_tupledef__build(select_def->where_tuple_def, basic_tuple, cube);
+		basic_tuple = tuple__merge(basic_tuple, where_tuple);
+	}
 
 	for (i = 0; i < rs_len; i++)
 	{
@@ -526,6 +531,12 @@ static ArrayList *select_def__build_axes(SelectDef *select_def)
 	// // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ArrayList *ax_def_ls desc \"%s\"\n", ax_def_ls->desc);
 	Cube *cube = select_def__get_cube(select_def);
 	MddTuple *ref_tuple = cube__basic_ref_vector(cube);
+
+	if (select_def->where_tuple_def) {
+		MddTuple *where_tuple = ids_tupledef__build(select_def->where_tuple_def, ref_tuple, cube);
+		ref_tuple = tuple__merge(ref_tuple, where_tuple);
+	}
+
 	int ax_count = als_size(ax_def_ls);
 	int i, j;
 	for (i = 0; i < ax_count; i++)
@@ -880,53 +891,45 @@ void Cube_print(Cube *c)
 
 void Tuple_print(MddTuple *tuple)
 {
-	printf(">>> [ Tuple info ] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ addr < %p >\n", tuple);
-	unsigned int len = als_size(tuple->mr_ls);
-	printf("als_size(tuple->mr_ls) = < %u >\n", len);
-	printf("   tuple->mr_ls->desc is < %s >\n", tuple->mr_ls->desc);
-	unsigned int i;
+	printf("{\n");
+	printf("\"type\": \"Tuple\",\n");
+	printf("\"mr_ls\": [\n");
+
+	unsigned int i, len = als_size(tuple->mr_ls);
 	for (i = 0; i < len; i++)
 	{
 		MemberRole_print(als_get(tuple->mr_ls, i));
+		if (i < len - 1)
+			printf(",\n");
 	}
+
+	printf("]\n");
+	printf("}\n");
 }
 
 void MemberRole_print(MddMemberRole *mr)
 {
-	printf(">>> [ MddMemberRole info ] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> addr < %p >\n", mr);
+	printf("{\n");
+	printf("\"type\": \"MemberRole\",\n");
+	printf("\"member\": ");
 	Member_print(mr->member);
+	printf(",\n");
+	printf("\"dim_role\": ");
 	DimensionRole_print(mr->dim_role);
+	printf("}\n");
 }
 
 void Member_print(Member *m)
 {
-	printf(">>> [ Member info ] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> addr < %p >\n", m);
-	printf("\t     name - %s\n", m->name);
-	printf("\t      gid - %lu\n", m->gid);
-	printf("\t    p_gid - %lu\n", m->p_gid);
-	printf("\t  dim_gid - %lu\n", m->dim_gid);
-	printf("\t       lv - %u\n", m->lv);
-	printf("\t bin_attr - %d\n", m->bin_attr);
-	printf("\t abs_path - %p\n", m->abs_path);
-	/*
-typedef struct _stct_mbr_
-{
-	char name[MD_ENTITY_NAME_BYTSZ];
-	md_gid gid;
-	md_gid p_gid;
-	md_gid dim_gid;
-	unsigned short lv;
-
-	// Each binary bit represents an attribute switch.
-	// lowest bit, 0 - leaf member, 1 - non-leaf member.
-	int bin_attr;
-} Member;
-	*/
+	printf("{ \"type\": \"Member\", \"name\": \"%s\" }\n", m->name);
 }
 
 void DimensionRole_print(DimensionRole *dr)
 {
-	printf(">>> [ DimensionRole info ] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> addr < %p >\n", dr);
+	if (dr)
+		printf("{ \"type\": \"DimensionRole\", \"name\": \"%s\" }\n", dr->name);
+	else
+		printf("null\n");
 }
 
 void mdd__gen_mbr_abs_path(Member *m)

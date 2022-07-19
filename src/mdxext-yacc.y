@@ -29,6 +29,7 @@ Stack YC_STC = { 0 };
 %token SELECT		/* select */
 %token FROM			/* from */
 %token ON			/* on */
+%token WHERE			/* on */
 
 /* punctuations */
 %token COMMA				/* , */
@@ -74,6 +75,14 @@ multi_dim_query:
 		ArrayList *ax_def_ls;
 		stack_pop(&YC_STC, (void **) &ax_def_ls);
 		SelectDef *select_def = ids_selectdef_new(cube_def, ax_def_ls);
+		stack_push(&YC_STC, select_def);
+	}
+  | multi_dim_query WHERE tuple_statement {
+		TupleDef *where_tuple_def;
+		stack_pop(&YC_STC, (void **) &where_tuple_def);
+		SelectDef *select_def;
+		stack_pop(&YC_STC, (void **) &select_def);
+		select_def->where_tuple_def = where_tuple_def;
 		stack_push(&YC_STC, select_def);
 	}
 ;
