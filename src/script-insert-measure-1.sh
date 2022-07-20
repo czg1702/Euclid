@@ -1,7 +1,15 @@
 #!/bin/bash
 
 ./euclid-cli " insert [logistics.test] " \
-" (Goods.[foods].[nut], Transport.[railway], [starting region].[Asia].[China], [ending region].[Asia].[China], [starting date].[2019].[Q3].[M7], [completion date].[2019].[Q3].[M7] measures quantity 333.333 income 222.222 cost 111.111 ), " \
+" (Goods.[foods].[nut], Transport.[railway], [starting region].[Asia].[China], [ending region].[Asia].[China], [starting date].[2019].[Q3].[M7], [completion date].[2019].[Q3].[M7] measures quantity 333.333 income 222.222 cost 9 ), " \
+" (Goods.[foods].[nut], Transport.[railway], [starting region].[Asia].[China], [ending region].[Asia].[Japan], [starting date].[2019].[Q3].[M7], [completion date].[2019].[Q3].[M7] measures quantity 333.333 income 222.222 cost 80 ), " \
+" (Goods.[foods].[nut], Transport.[railway], [starting region].[Asia].[China], [ending region].[Asia].[South Korea], [starting date].[2019].[Q3].[M7], [completion date].[2019].[Q3].[M7] measures quantity 333.333 income 222.222 cost 700 ), " \
+" (Goods.[foods].[nut], Transport.[railway], [starting region].[Asia].[China], [ending region].[America].[U.S], [starting date].[2019].[Q3].[M7], [completion date].[2019].[Q3].[M7] measures quantity 333.333 income 222.222 cost 6000 ), " \
+" (Goods.[foods].[nut], Transport.[railway], [starting region].[Asia].[China], [ending region].[America].[Mexico], [starting date].[2019].[Q3].[M7], [completion date].[2019].[Q3].[M7] measures quantity 333.333 income 222.222 cost 50000 ), " \
+" (Goods.[foods].[nut], Transport.[railway], [starting region].[Asia].[China], [ending region].[America].[Chile], [starting date].[2019].[Q3].[M7], [completion date].[2019].[Q3].[M7] measures quantity 333.333 income 222.222 cost 400000 ), " \
+" (Goods.[foods].[nut], Transport.[railway], [starting region].[Asia].[China], [ending region].[Europe].[Greece], [starting date].[2019].[Q3].[M7], [completion date].[2019].[Q3].[M7] measures quantity 333.333 income 222.222 cost 3000000 ), " \
+" (Goods.[foods].[nut], Transport.[railway], [starting region].[Asia].[China], [ending region].[Europe].[Italy], [starting date].[2019].[Q3].[M7], [completion date].[2019].[Q3].[M7] measures quantity 333.333 income 222.222 cost 20000000 ), " \
+" (Goods.[foods].[nut], Transport.[railway], [starting region].[Asia].[China], [ending region].[Europe].[UK], [starting date].[2019].[Q3].[M7], [completion date].[2019].[Q3].[M7] measures quantity 333.333 income 222.222 cost 100000000 ), " \
 " (Goods.[foods].[nut], Transport.[railway], [starting region].[Asia].[China], [ending region].[Asia].[South Korea], [starting date].[2021].[Q2].[M4], [completion date].[2021].[Q2].[M6] measures quantity 333.333 income 222.222 cost 111.111 ), " \
 " (Goods.[foods].[nut], Transport.[railway], [starting region].[Asia].[China], [ending region].[America].[Chile], [starting date].[2021].[Q1].[M2], [completion date].[2021].[Q2].[M5] measures quantity 333.333 income 222.222 cost 111.111 ), " \
 " (Goods.[foods].[nut], Transport.[railway], [starting region].[Asia].[China], [ending region].[Europe].[UK], [starting date].[2020].[Q4].[M12], [completion date].[2021].[Q2].[M4] measures quantity 333.333 income 222.222 cost 111.111 ), " \
