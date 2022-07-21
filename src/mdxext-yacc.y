@@ -76,16 +76,19 @@ statement:
 ;
 
 multi_dim_query:
-	with_section multi_dim_query {
-		SelectDef *select_def;
-		stack_pop(&YC_STC, (void **) &select_def);
+	with_section SELECT axes_statement FROM cube__statement {
+		CubeDef *cube_def;
+		stack_pop(&YC_STC, (void **) &cube_def);
+		ArrayList *ax_def_ls;
+		stack_pop(&YC_STC, (void **) &ax_def_ls);
+		SelectDef *select_def = ids_selectdef_new(cube_def, ax_def_ls);
 		FormulaContext *fc;
 		stack_pop(&YC_STC, (void **) &fc);
 		select_def->member_formulas = fc->member_formulas;
 		stack_push(&YC_STC, select_def);
 	}
   |	SELECT axes_statement FROM cube__statement {
-	  	// // printf("[debug] yacc - multi_dim_query ::= SELECT axes_statement FROM cube__statement\n");
+	  	// printf("[debug] yacc - multi_dim_query ::= SELECT axes_statement FROM cube__statement\n");
 		CubeDef *cube_def;
 		stack_pop(&YC_STC, (void **) &cube_def);
 		ArrayList *ax_def_ls;
