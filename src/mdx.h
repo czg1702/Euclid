@@ -81,11 +81,55 @@ CubeDef *ids_cubedef_new(char *name);
 
 typedef struct select_definition
 {
+    ArrayList *member_formulas;
     CubeDef *cube_def;
     ArrayList *ax_def_ls;
     TupleDef *where_tuple_def;
 } SelectDef;
 
 SelectDef *ids_selectdef_new(CubeDef *, ArrayList *);
+
+#define FACTORY_DEF__TUP_DEF 1
+typedef struct factory_definition
+{
+    ids_ct t_cons;
+    TupleDef *tuple_def;
+} Factory;
+Factory *Factory_creat();
+
+
+typedef struct term_definition
+{
+    ArrayList *mul_factories;
+    ArrayList *div_factories;
+} Term;
+Term *Term_creat();
+void Term_mul_factory(Term *t, Factory *f);
+void Term_div_factory(Term *t, Factory *f);
+
+
+typedef struct term_expression
+{
+    ArrayList *plus_terms;
+    ArrayList *minus_terms;
+} Expression;
+Expression *Expression_creat();
+void Expression_plus_term(Expression *e, Term *t);
+void Expression_minus_term(Expression *e, Term *t);
+
+
+typedef struct member_formula
+{
+    ArrayList *path;
+    Expression *exp;
+} MemberFormula;
+MemberFormula *MemberFormula_creat();
+
+typedef struct formula_context
+{
+    ArrayList *member_formulas;
+    // ArrayList *set_formulas;
+} FormulaContext;
+FormulaContext *FormulaContext_creat();
 
 #endif

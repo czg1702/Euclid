@@ -26,10 +26,13 @@ Stack YC_STC = { 0 };
 %token CUBE			/* cube */
 %token MEASURES		/* measures */
 %token INSERT		/* insert */
+%token WITH			/* with */
 %token SELECT		/* select */
 %token FROM			/* from */
 %token ON			/* on */
-%token WHERE			/* on */
+%token WHERE		/* where */
+%token MEMBER		/* member */
+%token AS			/* as */
 
 /* punctuations */
 %token COMMA				/* , */
@@ -39,6 +42,11 @@ Stack YC_STC = { 0 };
 %token ROUND_BRACKET_R		/* ) */
 %token BRACE_L				/* { */
 %token BRACE_R				/* } */
+
+%token PLUS					/* + */
+%token MINUS				/* - */
+%token MULTIPLIED			/* * */
+%token DIVIDED				/* / */
 
 %token VAR
 %token BLOCK
@@ -68,7 +76,15 @@ statement:
 ;
 
 multi_dim_query:
-	SELECT axes_statement FROM cube__statement {
+	with_section multi_dim_query {
+		SelectDef *select_def;
+		stack_pop(&YC_STC, (void **) &select_def);
+		FormulaContext *fc;
+		stack_pop(&YC_STC, (void **) &fc);
+		select_def->member_formulas = fc->member_formulas;
+		stack_push(&YC_STC, select_def);
+	}
+  |	SELECT axes_statement FROM cube__statement {
 	  	// // printf("[debug] yacc - multi_dim_query ::= SELECT axes_statement FROM cube__statement\n");
 		CubeDef *cube_def;
 		stack_pop(&YC_STC, (void **) &cube_def);
@@ -84,6 +100,95 @@ multi_dim_query:
 		stack_pop(&YC_STC, (void **) &select_def);
 		select_def->where_tuple_def = where_tuple_def;
 		stack_push(&YC_STC, select_def);
+	}
+;
+
+with_section:
+	WITH {
+		FormulaContext *fc = FormulaContext_creat();
+		stack_push(&YC_STC, fc);
+	}
+  | with_section member_formula_statement {
+		MemberFormula *mf;
+		stack_pop(&YC_STC, (void **) &mf);
+		FormulaContext *fc;
+		stack_pop(&YC_STC, (void **) &fc);
+		als_add(fc->member_formulas, mf);
+		stack_push(&YC_STC, fc);
+	}
+;
+
+member_formula_statement:
+	MEMBER member_absolute_path AS expression {
+		MemberFormula *mf = MemberFormula_creat();
+		stack_pop(&YC_STC, (void **) &(mf->path));
+		stack_pop(&YC_STC, (void **) &(mf->exp));
+		stack_push(&YC_STC, mf);
+	}
+;
+
+expression:
+	term {
+		Term *t;
+		stack_pop(&YC_STC, (void **) &t);
+		Expression *e = Expression_creat();
+		Expression_plus_term(e, t);
+		stack_push(&YC_STC, e);
+	}
+  | expression PLUS term {
+		Term *t;
+		stack_pop(&YC_STC, (void **) &t);
+		Expression *e;
+		stack_pop(&YC_STC, (void **) &e);
+		Expression_plus_term(e, t);
+		stack_push(&YC_STC, e);
+	}
+  | expression MINUS term {
+		Term *t;
+		stack_pop(&YC_STC, (void **) &t);
+		Expression *e;
+		stack_pop(&YC_STC, (void **) &e);
+		Expression_minus_term(e, t);
+		stack_push(&YC_STC, e);
+	}
+;
+
+term:
+	factory {
+		Factory *f;
+		stack_pop(&YC_STC, (void **) &f);
+		Term *t = Term_creat();
+		Term_mul_factory(t, f);
+		stack_push(&YC_STC, t);
+	}
+  | term MULTIPLIED factory {
+		Factory *f;
+		stack_pop(&YC_STC, (void **) &f);
+		Term *t = Term_creat();
+		stack_pop(&YC_STC, (void **) &t);
+		Term_mul_factory(t, f);
+		stack_push(&YC_STC, t);
+	}
+  | term DIVIDED factory {
+		Factory *f;
+		stack_pop(&YC_STC, (void **) &f);
+		Term *t = Term_creat();
+		stack_pop(&YC_STC, (void **) &t);
+		Term_div_factory(t, f);
+		stack_push(&YC_STC, t);
+	}
+;
+
+factory:
+	tuple_statement {
+		TupleDef *t_def;
+		stack_pop(&YC_STC, (void **) &t_def);
+
+		Factory *f = Factory_creat();
+		f->t_cons = FACTORY_DEF__TUP_DEF;
+		f->tuple_def = t_def;
+
+		stack_push(&YC_STC, f);
 	}
 ;
 

@@ -47,6 +47,10 @@ insert	{
 	return INSERT;
 }
 
+with	{
+	return WITH;
+}
+
 select	{
 	return SELECT;
 }
@@ -61,6 +65,14 @@ on	{
 
 where	{
 	return WHERE;
+}
+
+member	{
+	return MEMBER;
+}
+
+as	{
+	return AS;
 }
 
 [_a-zA-Z][_a-zA-Z0-9]*	{
@@ -97,6 +109,22 @@ where	{
 
 "}" {
 	return BRACE_R;
+}
+
+"+" {
+	return PLUS;
+}
+
+"-" {
+	return MINUS;
+}
+
+"*" {
+	return MULTIPLIED;
+}
+
+"/" {
+	return DIVIDED;
 }
 
 \x5B[^\x5B\x5D]+\x5D	{
