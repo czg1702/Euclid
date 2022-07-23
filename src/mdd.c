@@ -16,23 +16,23 @@ static ArrayList *cubes_pool;
 static Member *_create_member_lv1(Dimension *dim, char *mbr_name);
 static Member *_create_member_child(Member *parent, char *child_name);
 
-static ArrayList *select_def__build_axes(SelectDef *);
+static ArrayList *select_def__build_axes(MDContext *md_ctx, SelectDef *);
 
 static Cube *select_def__get_cube(SelectDef *);
 
 static MddTuple *cube__basic_ref_vector(Cube *);
 
-static MddTuple *ax_def__head_ref_tuple(AxisDef *, MddTuple *, Cube *);
+static MddTuple *ax_def__head_ref_tuple(MDContext *md_ctx, AxisDef *, MddTuple *, Cube *);
 
 static MddTuple *tuple__merge(MddTuple *cxt_tuple, MddTuple *tuple_frag);
 
-static MddAxis *ax_def__build(AxisDef *, MddTuple *, Cube *);
+static MddAxis *ax_def__build(MDContext *md_ctx, AxisDef *, MddTuple *, Cube *);
 
 static unsigned int mdd_ax__len(MddAxis *);
 
 static unsigned int mdd_set__len(MddSet *);
 
-static MddTuple *ids_tupledef__build(TupleDef *t_def, MddTuple *context_tuple, Cube *cube);
+static MddTuple *ids_tupledef__build(MDContext *md_ctx, TupleDef *t_def, MddTuple *context_tuple, Cube *cube);
 
 Member *_new_member(char *name, md_gid dim_gid, md_gid parent_gid, __u_short lv);
 
@@ -234,11 +234,6 @@ Member *_new_member(char *name, md_gid dim_gid, md_gid parent_gid, __u_short lv)
 	mbr->lv = lv;
 	printf("[INFO] new Member - dim_gid [ %ld ] p_gid [% 17ld ] gid [ %ld ] name [ %s ] lv [ %d ]\n", mbr->dim_gid, mbr->p_gid, mbr->gid, mbr->name, mbr->lv);
 
-	// printf("******************************** mbr->name %s\n", mbr->name);
-	// Code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	// printf("// Code for testing ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-	// Member_print(mbr);
-	// Code for testing ? >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	return mbr;
 }
 
@@ -462,8 +457,11 @@ void *gen_member_gid_abs_path(Cube *cube, ArrayList *mbr_path_str)
 
 void *exe_multi_dim_queries(SelectDef *select_def)
 {
+	MDContext *md_ctx = MDContext_creat();
+	md_ctx->select_def = select_def;
+
 	// Build the real axes in this multidimensional query.
-	ArrayList *axes = select_def__build_axes(select_def);
+	ArrayList *axes = select_def__build_axes(md_ctx, select_def);
 	unsigned int x_size = als_size(axes);
 
 	// Cross these axes to generate result set.
@@ -509,7 +507,7 @@ void *exe_multi_dim_queries(SelectDef *select_def)
 
 	MddTuple *basic_tuple = cube__basic_ref_vector(cube);
 	if (select_def->where_tuple_def) {
-		MddTuple *where_tuple = ids_tupledef__build(select_def->where_tuple_def, basic_tuple, cube);
+		MddTuple *where_tuple = ids_tupledef__build(md_ctx, select_def->where_tuple_def, basic_tuple, cube);
 		basic_tuple = tuple__merge(basic_tuple, where_tuple);
 	}
 
@@ -525,7 +523,7 @@ void *exe_multi_dim_queries(SelectDef *select_def)
 	return md_result;
 }
 
-static ArrayList *select_def__build_axes(SelectDef *select_def)
+static ArrayList *select_def__build_axes(MDContext *md_ctx, SelectDef *select_def)
 {
 	ArrayList *ax_def_ls = select_def->ax_def_ls;
 	// // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ArrayList *ax_def_ls desc \"%s\"\n", ax_def_ls->desc);
@@ -533,7 +531,7 @@ static ArrayList *select_def__build_axes(SelectDef *select_def)
 	MddTuple *ref_tuple = cube__basic_ref_vector(cube);
 
 	if (select_def->where_tuple_def) {
-		MddTuple *where_tuple = ids_tupledef__build(select_def->where_tuple_def, ref_tuple, cube);
+		MddTuple *where_tuple = ids_tupledef__build(md_ctx, select_def->where_tuple_def, ref_tuple, cube);
 		ref_tuple = tuple__merge(ref_tuple, where_tuple);
 	}
 
@@ -544,7 +542,7 @@ static ArrayList *select_def__build_axes(SelectDef *select_def)
 		for (j = 0; j < ax_count; j++)
 		{
 			AxisDef *ax_def = als_get(ax_def_ls, j);
-			MddTuple *ax_head_ref_tuple = ax_def__head_ref_tuple(ax_def, ref_tuple, cube);
+			MddTuple *ax_head_ref_tuple = ax_def__head_ref_tuple(md_ctx, ax_def, ref_tuple, cube);
 
 			// // printf("[debug] <><><><><><><><><><><><><>      ax_head_ref_tuple [ %p ] ax_head_ref_tuple->mr_ls [ %p ]\n", ax_head_ref_tuple, ax_head_ref_tuple->mr_ls);
 
@@ -555,7 +553,7 @@ static ArrayList *select_def__build_axes(SelectDef *select_def)
 	for (i = 0; i < ax_count; i++)
 	{
 		AxisDef *ax_def = als_get(ax_def_ls, i);
-		MddAxis *ax = ax_def__build(ax_def, ref_tuple, cube);
+		MddAxis *ax = ax_def__build(md_ctx, ax_def, ref_tuple, cube);
 		als_add(axes_ls, ax);
 	}
 
@@ -614,9 +612,9 @@ static MddTuple *cube__basic_ref_vector(Cube *cube)
 	return tuple;
 }
 
-static MddTuple *ax_def__head_ref_tuple(AxisDef *ax_def, MddTuple *t, Cube *c)
+static MddTuple *ax_def__head_ref_tuple(MDContext *md_ctx, AxisDef *ax_def, MddTuple *t, Cube *c)
 {
-	return ids_setdef__head_ref_tuple(ax_def->set_def, t, c);
+	return ids_setdef__head_ref_tuple(md_ctx, ax_def->set_def, t, c);
 }
 
 static MddTuple *tuple__merge(MddTuple *ctx_tuple, MddTuple *tuple_frag)
@@ -686,9 +684,9 @@ static MddTuple *tuple__merge(MddTuple *ctx_tuple, MddTuple *tuple_frag)
 	return tp;
 }
 
-static MddAxis *ax_def__build(AxisDef *ax_def, MddTuple *ctx_tuple, Cube *cube)
+static MddAxis *ax_def__build(MDContext *md_ctx, AxisDef *ax_def, MddTuple *ctx_tuple, Cube *cube)
 {
-	MddSet *_set = ids_setdef__build(ax_def->set_def, ctx_tuple, cube);
+	MddSet *_set = ids_setdef__build(md_ctx, ax_def->set_def, ctx_tuple, cube);
 	MddAxis *ax = mdd_ax__create();
 	ax->set = _set;
 	ax->posi = ax_def->posi;
@@ -731,28 +729,28 @@ MddMemberRole *mdd_mr__create(Member *m, DimensionRole *dr)
 	return mr;
 }
 
-MddTuple *ids_setdef__head_ref_tuple(SetDef *set_def, MddTuple *context_tuple, Cube *cube)
+MddTuple *ids_setdef__head_ref_tuple(MDContext *md_ctx, SetDef *set_def, MddTuple *context_tuple, Cube *cube)
 {
 	// printf("************************************************************  [set_def->tuple_def_ls->desc]  %s\n", set_def->tuple_def_ls->desc);
 	// printf("************************************************************  [als_size(set_def->tuple_def_ls)]  %d\n", als_size(set_def->tuple_def_ls));
 	TupleDef *head_ref_tupdef = (TupleDef *)als_get(set_def->tuple_def_ls, 0);
-	return ids_tupledef__build(head_ref_tupdef, context_tuple, cube);
+	return ids_tupledef__build(md_ctx, head_ref_tupdef, context_tuple, cube);
 }
 
-static MddTuple *ids_tupledef__build(TupleDef *t_def, MddTuple *context_tuple, Cube *cube)
+static MddTuple *ids_tupledef__build(MDContext *md_ctx, TupleDef *t_def, MddTuple *context_tuple, Cube *cube)
 {
 	MddTuple *t = (MddTuple *)mdd_tp__create();
 	int i, len = als_size(t_def->ms_def->mbr_def_ls);
 	for (i = 0; i < len; i++)
 	{
 		MemberDef *m_def = als_get(t_def->ms_def->mbr_def_ls, i);
-		MddMemberRole *mr = ids_mbrsdef__build(m_def, context_tuple, cube);
+		MddMemberRole *mr = ids_mbrsdef__build(md_ctx, m_def, context_tuple, cube);
 		mdd_tp__add_mbrole(t, mr);
 	}
 	return t;
 }
 
-MddMemberRole *ids_mbrsdef__build(MemberDef *m_def, MddTuple *context_tuple, Cube *cube)
+MddMemberRole *ids_mbrsdef__build(MDContext *md_ctx, MemberDef *m_def, MddTuple *context_tuple, Cube *cube)
 {
 	if (m_def->t_cons == MEMBER_DEF__MBR_ABS_PATH)
 	{
@@ -778,8 +776,21 @@ MddMemberRole *ids_mbrsdef__build(MemberDef *m_def, MddTuple *context_tuple, Cub
 			}
 
 			Member *mbr = dim__find_mbr(dim, mbr_path);
-			MddMemberRole *mr = mdd_mr__create(mbr, dr);
-			return mr;
+
+			if (mbr) { // entity dimension member
+				return mdd_mr__create(mbr, dr);
+			} else { // formula member
+				int f_sz = als_size(md_ctx->select_def->member_formulas);
+				for (i = 0; i < f_sz; i++) {
+					MemberFormula *f = als_get(md_ctx->select_def->member_formulas, i);
+					if ( (strcmp(als_get(f->path, 0), als_get(m_def->mbr_abs_path, 0)) == 0)
+							&& (strcmp(als_get(f->path, 1), als_get(m_def->mbr_abs_path, 1)) == 0) ) {
+						MddMemberRole *mr = mdd_mr__create(NULL, dr);
+						mr->member_formula = f;
+						return mr;
+					}
+				}
+			}
 		}
 		else
 		{ // measure dimension
@@ -840,7 +851,7 @@ MddAxis *mdd_ax__create()
 	return (MddAxis *)mem_alloc_0(sizeof(MddAxis));
 }
 
-MddSet *ids_setdef__build(SetDef *set_def, MddTuple *ctx_tuple, Cube *cube)
+MddSet *ids_setdef__build(MDContext *md_ctx, SetDef *set_def, MddTuple *ctx_tuple, Cube *cube)
 {
 	MddSet *set = mdd_set__create();
 	if (set_def->t_cons == SET_DEF__TUP_DEF_LS)
@@ -849,7 +860,7 @@ MddSet *ids_setdef__build(SetDef *set_def, MddTuple *ctx_tuple, Cube *cube)
 		for (i = 0; i < sz; i++)
 		{
 			TupleDef *tp_def = als_get(set_def->tuple_def_ls, i);
-			MddTuple *tp = ids_tupledef__build(tp_def, ctx_tuple, cube);
+			MddTuple *tp = ids_tupledef__build(md_ctx, tp_def, ctx_tuple, cube);
 			mddset__add_tuple(set, tp);
 		}
 		return set;
@@ -960,4 +971,9 @@ Member *find_member_by_gid(md_gid m_gid)
 			return m;
 	}
 	return NULL;
+}
+
+double Expression_evaluate(Expression *exp, Cube *cube, MddTuple *tuple) {
+	// TODO
+    return 8760.666;
 }

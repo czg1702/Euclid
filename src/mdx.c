@@ -9,6 +9,7 @@
 //#include "command.h"
 
 #include "mdx.h"
+#include "obj-type-def.h"
 
 MemberDef *ids_mbrdef_new__mbr_abs_path(ArrayList *mbr_abs_path)
 {
@@ -120,4 +121,8 @@ FormulaContext *FormulaContext_creat() {
     FormulaContext *fc = (FormulaContext *)mem_alloc_0(sizeof(FormulaContext));
     fc->member_formulas = als_create(32, "MemberFormula *");
     return fc;
+}
+
+MDContext *MDContext_creat() {
+    return obj_alloc(sizeof(MDContext), OBJ_TYPE__MD_CONTEXT);
 }

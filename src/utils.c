@@ -15,6 +15,18 @@ void *mem_alloc_0(size_t size)
 	return addr;
 }
 
+void *obj_alloc(size_t size, int type) {
+	size += sizeof(int);
+	int *obj_head = malloc(size);
+	memset(obj_head, 0, size);
+	*obj_head = type;
+	return obj_head + 1;
+}
+
+int obj_type_of(void *obj) {
+	return *(((int *) obj) - 1);
+}
+
 ssize_t read_sock_pkg(int sock_fd, void **buf, size_t *buf_len)
 {
 	int pkg_capacity;

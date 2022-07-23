@@ -89,6 +89,14 @@ typedef struct select_definition
 
 SelectDef *ids_selectdef_new(CubeDef *, ArrayList *);
 
+
+typedef struct _MD_context_
+{
+    SelectDef *select_def;
+} MDContext;
+MDContext *MDContext_creat();
+
+
 #define FACTORY_DEF__TUP_DEF 1
 typedef struct factory_definition
 {

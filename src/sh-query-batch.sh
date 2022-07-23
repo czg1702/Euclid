@@ -15,3 +15,5 @@ sleep 1
 ./script-select-6.sh
 sleep 1
 ./script-select-7.sh
+sleep 1
+./script-select-8-member-formula.sh

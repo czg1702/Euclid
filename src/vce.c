@@ -414,16 +414,20 @@ double *vce_vactors_values(MddTuple **tuples_matrix_h, unsigned long v_len)
         for (j = 0; j < als_size(tuple->mr_ls); j++)
         {
             MddMemberRole *mr = als_get(tuple->mr_ls, j);
-            Member *m = mr->member;
-            if (!m->abs_path)
-                mdd__gen_mbr_abs_path(m);
+            if (mr->member && (!mr->member->abs_path))
+                mdd__gen_mbr_abs_path(mr->member);
+            else
+                printf("[ info ] - This member role represents a calculation formula member.\n");
         }
     }
 
     double *result = mem_alloc_0(v_len * sizeof(double));
 
     for (i = 0; i < v_len; i++)
+    {
         result[i] = do_calculate_measure_value(cube, tuples_matrix_h[i]);
+        printf("[ debug ] - >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> result[ %lu ] = %lf\n", i, result[i]);
+    }    
 
     return result;
 }
@@ -511,6 +515,15 @@ static double do_calculate_measure_value(Cube *cube, MddTuple *tuple)
 {
     int i;
     int sz = als_size(tuple->mr_ls);
+
+    for (i = sz - 1; i >= 0; i--) {
+        MddMemberRole *mr = als_get(tuple->mr_ls, i);
+        if (mr->member_formula) {
+            Expression *exp = mr->member_formula->exp;
+            return Expression_evaluate(exp, cube, tuple);
+        }
+    }
+
     int coor_count = als_size(coor_sys_ls);
 
     CoordinateSystem *coor;

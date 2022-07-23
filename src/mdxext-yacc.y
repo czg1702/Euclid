@@ -124,8 +124,8 @@ with_section:
 member_formula_statement:
 	MEMBER member_absolute_path AS expression {
 		MemberFormula *mf = MemberFormula_creat();
-		stack_pop(&YC_STC, (void **) &(mf->path));
 		stack_pop(&YC_STC, (void **) &(mf->exp));
+		stack_pop(&YC_STC, (void **) &(mf->path));
 		stack_push(&YC_STC, mf);
 	}
 ;

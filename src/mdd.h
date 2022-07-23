@@ -120,6 +120,7 @@ typedef struct mdd_axis
 typedef struct mdd_mbr_role
 {
 	Member *member;
+	MemberFormula *member_formula;
 	DimensionRole *dim_role;
 } MddMemberRole;
 
@@ -136,15 +137,15 @@ MddAxis *mdd_ax__create();
 
 void mdd_tp__add_mbrole(MddTuple *, MddMemberRole *);
 
-MddTuple *ids_setdef__head_ref_tuple(SetDef *set_def, MddTuple *context_tuple, Cube *cube);
+MddTuple *ids_setdef__head_ref_tuple(MDContext *md_ctx, SetDef *set_def, MddTuple *context_tuple, Cube *cube);
 
-MddMemberRole *ids_mbrsdef__build(MemberDef *m_def, MddTuple *context_tuple, Cube *cube);
+MddMemberRole *ids_mbrsdef__build(MDContext *md_ctx, MemberDef *m_def, MddTuple *context_tuple, Cube *cube);
 
 DimensionRole *cube__dim_role(Cube *cube, char *dim_role_name);
 
 Member *dim__find_mbr(Dimension *dim, ArrayList *mbr_name_path);
 
-MddSet *ids_setdef__build(SetDef *set_def, MddTuple *ctx_tuple, Cube *cube);
+MddSet *ids_setdef__build(MDContext *md_ctx, SetDef *set_def, MddTuple *ctx_tuple, Cube *cube);
 
 void mddset__add_tuple(MddSet *, MddTuple *);
 
@@ -155,5 +156,7 @@ MddTuple *_MddTuple__mergeTuples(MddTuple **tps, int count);
 void mdd__gen_mbr_abs_path(Member *);
 
 Member *find_member_by_gid(md_gid);
+
+double Expression_evaluate(Expression *exp, Cube *cube, MddTuple *tuple);
 
 #endif

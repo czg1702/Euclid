@@ -56,6 +56,10 @@ char *str_arr_get(StrArr *sa, unsigned int i);
 
 void *mem_alloc_0(size_t size);
 
+void *obj_alloc(size_t size, int type);
+
+int obj_type_of(void *obj);
+
 int release_mem(void *addr);
 
 ssize_t read_sock_pkg(int sock_fd, void **buf, size_t *buf_len);
