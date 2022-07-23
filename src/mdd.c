@@ -1018,6 +1018,8 @@ double Factory_evaluate(Factory *fac, Cube *cube, MddTuple *ctx_tuple) {
 		MddTuple *tuple = ids_tupledef__build(NULL, fac->tuple_def, ctx_tuple, cube);
 		tuple = tuple__merge(ctx_tuple, tuple);
 		return do_calculate_measure_value(cube, tuple);
+	} else if (fac->t_cons == FACTORY_DEF__DECIMAL) {
+		return fac->decimal;
 	} else {
 		printf("[ error ] - Factory_evaluate() <program exit>\n");
 	}

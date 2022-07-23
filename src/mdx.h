@@ -98,10 +98,12 @@ MDContext *MDContext_creat();
 
 
 #define FACTORY_DEF__TUP_DEF 1
+#define FACTORY_DEF__DECIMAL 2
 typedef struct factory_definition
 {
     ids_ct t_cons;
     TupleDef *tuple_def;
+    double decimal;
 } Factory;
 Factory *Factory_creat();
 

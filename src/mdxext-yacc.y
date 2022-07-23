@@ -183,7 +183,13 @@ term:
 ;
 
 factory:
-	tuple_statement {
+	DECIMAL {
+		Factory *f = Factory_creat();
+		f->t_cons = FACTORY_DEF__DECIMAL;
+		f->decimal = strtod(yytext, NULL); // TODO Please understand the "strtod() function" carefully
+		stack_push(&YC_STC, f);
+	}
+  |	tuple_statement {
 		TupleDef *t_def;
 		stack_pop(&YC_STC, (void **) &t_def);
 
