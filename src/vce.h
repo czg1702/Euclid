@@ -113,4 +113,6 @@ void space__destory(MeasureSpace *);
 
 double *vce_vactors_values(MddTuple **tuples_matrix_h, unsigned long v_len);
 
+double do_calculate_measure_value(Cube *, MddTuple *);
+
 #endif

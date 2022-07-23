@@ -973,7 +973,52 @@ Member *find_member_by_gid(md_gid m_gid)
 	return NULL;
 }
 
-double Expression_evaluate(Expression *exp, Cube *cube, MddTuple *tuple) {
-	// TODO
-    return 8760.666;
+double Expression_evaluate(Expression *exp, Cube *cube, MddTuple *ctx_tuple) {
+	double val = 0;
+
+	int p_sz = als_size(exp->plus_terms);
+	int m_sz = als_size(exp->minus_terms);
+	int i;
+
+	for (i = 0; i < p_sz; i++) {
+		Term *term = als_get(exp->plus_terms, i);
+		val += Term_evaluate(term, cube, ctx_tuple);
+	}
+
+	for (i = 0; i < m_sz; i++) {
+		Term *term = als_get(exp->minus_terms, i);
+		val -= Term_evaluate(term, cube, ctx_tuple);
+	}
+
+    return val;
+}
+
+double Term_evaluate(Term *term, Cube *cube, MddTuple *ctx_tuple) {
+	double val = 1;
+
+	int m_sz = als_size(term->mul_factories);
+	int d_sz = als_size(term->div_factories);
+	int i;
+
+	for (i = 0; i < m_sz; i++) {
+		Factory *fac = als_get(term->mul_factories, i);
+		val *= Factory_evaluate(fac, cube, ctx_tuple);
+	}
+
+	for (i = 0; i < d_sz; i++) {
+		Factory *fac = als_get(term->div_factories, i);
+		val /= Factory_evaluate(fac, cube, ctx_tuple);
+	}
+
+    return val;
+}
+
+double Factory_evaluate(Factory *fac, Cube *cube, MddTuple *ctx_tuple) {
+	if (fac->t_cons == FACTORY_DEF__TUP_DEF) {
+		MddTuple *tuple = ids_tupledef__build(NULL, fac->tuple_def, ctx_tuple, cube);
+		tuple = tuple__merge(ctx_tuple, tuple);
+		return do_calculate_measure_value(cube, tuple);
+	} else {
+		printf("[ error ] - Factory_evaluate() <program exit>\n");
+	}
 }

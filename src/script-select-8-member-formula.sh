@@ -1,5 +1,5 @@
 ./euclid-cli \
-"with member [ending region].CCCCCC as ([ending region].[Asia].[China]) + ([ending region].[America].[U.S]) + ([ending region].[Europe].[Greece]) + ([ending region].[Europe].[Italy]) " \
+"with member [ending region].CCCCCC as ([ending region].[Asia].[China]) * ([ending region].[America].[U.S]) / ([ending region].[Europe].[Greece]) + ([ending region].[Europe].[Italy]) " \
 "select " \
 "{ " \
 "  ( measure.cost, [ending region].[Asia].[China] ), " \

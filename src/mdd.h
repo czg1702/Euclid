@@ -157,6 +157,10 @@ void mdd__gen_mbr_abs_path(Member *);
 
 Member *find_member_by_gid(md_gid);
 
-double Expression_evaluate(Expression *exp, Cube *cube, MddTuple *tuple);
+double Expression_evaluate(Expression *exp, Cube *cube, MddTuple *ctx_tuple);
+
+double Term_evaluate(Term *term, Cube *cube, MddTuple *ctx_tuple);
+
+double Factory_evaluate(Factory *fac, Cube *cube, MddTuple *ctx_tuple);
 
 #endif

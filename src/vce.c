@@ -8,8 +8,6 @@
 static ArrayList *coor_sys_ls;
 static ArrayList *space_ls;
 
-static double do_calculate_measure_value(Cube *, MddTuple *);
-
 static void _do_calculate_measure_value(MeasureSpace *space, ArrayList *sor_ls, int deep, unsigned long offset, double *val, int mea_val_idx);
 
 static double MeasureSpace_coordinate_intersection_value(MeasureSpace *space, unsigned long index, int mea_val_idx);
@@ -511,7 +509,7 @@ void CoordinateSystem__calculate_offset(CoordinateSystem *coor)
     }
 }
 
-static double do_calculate_measure_value(Cube *cube, MddTuple *tuple)
+double do_calculate_measure_value(Cube *cube, MddTuple *tuple)
 {
     int i;
     int sz = als_size(tuple->mr_ls);
