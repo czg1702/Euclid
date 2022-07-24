@@ -42,7 +42,7 @@ void max_mem()
     for (i = 0; i < 30; i++)
     {
         addr = malloc(sz);
-        printf("% 8d >>> %p % 32lu\n", i, addr,   (size_t) addr);
+        printf("% 8d >>> %p % 32lu\n", i, addr, (size_t)addr);
     }
 
     printf("test completed.\n");
