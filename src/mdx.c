@@ -117,12 +117,23 @@ MemberFormula *MemberFormula_creat() {
     return (MemberFormula *)mem_alloc_0(sizeof(MemberFormula));
 }
 
+SetFormula *SetFormula_creat() {
+    return obj_alloc(sizeof(SetFormula), OBJ_TYPE__SET_FORMULA);
+}
+
 FormulaContext *FormulaContext_creat() {
     FormulaContext *fc = (FormulaContext *)mem_alloc_0(sizeof(FormulaContext));
     fc->member_formulas = als_create(32, "MemberFormula *");
+    fc->set_formulas = als_create(32, "SetFormula *");
     return fc;
 }
 
 MDContext *MDContext_creat() {
     return obj_alloc(sizeof(MDContext), OBJ_TYPE__MD_CONTEXT);
+}
+
+SetFnChildren *SetFnChildren_creat(MemberDef *m_def) {
+    SetFnChildren *fn = obj_alloc(sizeof(SetFnChildren), OBJ_TYPE__SET_FN_CHILDREN);
+    fn->m_def = m_def;
+    return fn;
 }

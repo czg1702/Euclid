@@ -7,6 +7,7 @@
 #include "cfg.h"
 #include "net.h"
 #include "vce.h"
+#include "obj-type-def.h"
 
 static md_gid lastest_md_gid = -1;
 
@@ -733,8 +734,28 @@ MddTuple *ids_setdef__head_ref_tuple(MDContext *md_ctx, SetDef *set_def, MddTupl
 {
 	// printf("************************************************************  [set_def->tuple_def_ls->desc]  %s\n", set_def->tuple_def_ls->desc);
 	// printf("************************************************************  [als_size(set_def->tuple_def_ls)]  %d\n", als_size(set_def->tuple_def_ls));
-	TupleDef *head_ref_tupdef = (TupleDef *)als_get(set_def->tuple_def_ls, 0);
-	return ids_tupledef__build(md_ctx, head_ref_tupdef, context_tuple, cube);
+	if (set_def->t_cons == SET_DEF__TUP_DEF_LS) {
+		return ids_tupledef__build(md_ctx, als_get(set_def->tuple_def_ls, 0), context_tuple, cube);
+	} else if (set_def->t_cons == SET_DEF__SET_FUNCTION) {
+		if (obj_type_of(set_def->set_fn) == OBJ_TYPE__SET_FN_CHILDREN) {
+			MddSet *set = SetFnChildren_evolving(md_ctx, set_def->set_fn, cube, context_tuple);
+			return als_get(set->tuples, 0);
+		} else {
+			printf("[ error ] - ids_setdef__head_ref_tuple() obj_type_of(set_def->set_fn) = %d\n", obj_type_of(set_def->set_fn));
+			exit(1);
+		}
+	} else if (set_def->t_cons == SET_DEF__VAR_OR_BLOCK) {
+		int i, sz = als_size(md_ctx->select_def->set_formulas);
+		for (i = 0; i < sz; i++) {
+			SetFormula *sf = als_get(md_ctx->select_def->set_formulas, i);
+			if (strcmp(set_def->var_block, sf->var_block) == 0) {
+				return ids_setdef__head_ref_tuple(md_ctx, sf->set_def, context_tuple, cube);
+			}
+		}
+	} else {
+		printf("[ error ] - ids_setdef__head_ref_tuple() set_def->t_cons = %d\n", set_def->t_cons);
+		exit(1);
+	}
 }
 
 static MddTuple *ids_tupledef__build(MDContext *md_ctx, TupleDef *t_def, MddTuple *context_tuple, Cube *cube)
@@ -864,11 +885,25 @@ MddSet *ids_setdef__build(MDContext *md_ctx, SetDef *set_def, MddTuple *ctx_tupl
 			mddset__add_tuple(set, tp);
 		}
 		return set;
-	}
-	else
+	} else if (set_def->t_cons == SET_DEF__SET_FUNCTION) {
+		if (obj_type_of(set_def->set_fn) == OBJ_TYPE__SET_FN_CHILDREN) {
+			return SetFnChildren_evolving(md_ctx, set_def->set_fn, cube, ctx_tuple);
+		} else {
+			printf("[warn] - ids_setdef__build() obj_type_of(set_def->set_fn) = %d\n", obj_type_of(set_def->set_fn));
+			exit(1);
+		}
+	} else if (set_def->t_cons == SET_DEF__VAR_OR_BLOCK) {
+		int i, sz = als_size(md_ctx->select_def->set_formulas);
+		for (i = 0; i < sz; i++) {
+			SetFormula *sf = als_get(md_ctx->select_def->set_formulas, i);
+			if (strcmp(set_def->var_block, sf->var_block) == 0) {
+				return ids_setdef__build(md_ctx, sf->set_def, ctx_tuple, cube);
+			}
+		}
+	} else
 	{
 		printf("[warn] wrong SetDef::t_cons\n");
-		return NULL;
+		exit(1);
 	}
 }
 
@@ -1023,4 +1058,20 @@ double Factory_evaluate(Factory *fac, Cube *cube, MddTuple *ctx_tuple) {
 	} else {
 		printf("[ error ] - Factory_evaluate() <program exit>\n");
 	}
+}
+
+MddSet *SetFnChildren_evolving(MDContext *md_ctx, void *fn, Cube *cube, MddTuple *ctx_tuple) {
+	MddMemberRole *parent_mr = ids_mbrsdef__build(md_ctx, ((SetFnChildren *)fn)->m_def, ctx_tuple, cube);
+	Member *parent = parent_mr->member;
+	MddSet *set = mdd_set__create();
+	int i, sz = als_size(member_pool);
+	for (i=0;i<sz;i++) {
+		Member *m = als_get(member_pool, i);
+		if (m->p_gid == parent->gid) {
+			MddTuple *tuple = mdd_tp__create();
+			mdd_tp__add_mbrole(tuple, mdd_mr__create(m, parent_mr->dim_role));
+			mddset__add_tuple(set, tuple);
+		}
+	}
+	return set;
 }

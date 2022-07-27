@@ -52,12 +52,17 @@ TupleDef *ids_tupledef_new(ids_ct);
 
 void ids_tupledef___set_mbrs_def(TupleDef *, MembersDef *);
 
-#define SET_DEF__TUP_DEF_LS 1
+
+#define SET_DEF__TUP_DEF_LS     1
+#define SET_DEF__SET_FUNCTION   2
+#define SET_DEF__VAR_OR_BLOCK   3
 
 typedef struct set_definition
 {
     ids_ct t_cons;
     ArrayList *tuple_def_ls;
+    void *set_fn;
+    char *var_block;
 } SetDef;
 
 SetDef *ids_setdef_new(ids_ct);
@@ -82,6 +87,7 @@ CubeDef *ids_cubedef_new(char *name);
 typedef struct select_definition
 {
     ArrayList *member_formulas;
+    ArrayList *set_formulas;
     CubeDef *cube_def;
     ArrayList *ax_def_ls;
     TupleDef *where_tuple_def;
@@ -135,11 +141,24 @@ typedef struct member_formula
 } MemberFormula;
 MemberFormula *MemberFormula_creat();
 
+typedef struct set_formula
+{
+    char *var_block;
+    SetDef *set_def;
+} SetFormula;
+SetFormula *SetFormula_creat();
+
 typedef struct formula_context
 {
     ArrayList *member_formulas;
-    // ArrayList *set_formulas;
+    ArrayList *set_formulas;
 } FormulaContext;
 FormulaContext *FormulaContext_creat();
+
+typedef struct set_fn_children
+{
+    MemberDef *m_def;
+} SetFnChildren;
+SetFnChildren *SetFnChildren_creat(MemberDef *m_def);
 
 #endif

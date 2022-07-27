@@ -34,6 +34,10 @@ Stack YC_STC = { 0 };
 %token MEMBER		/* member */
 %token AS			/* as */
 
+/* set functions key words */
+%token SET			/* set */
+%token CHILDREN		/* children */
+
 /* punctuations */
 %token COMMA				/* , */
 %token DOT					/* . */
@@ -85,7 +89,9 @@ multi_dim_query:
 		FormulaContext *fc;
 		stack_pop(&YC_STC, (void **) &fc);
 		select_def->member_formulas = fc->member_formulas;
+		select_def->set_formulas = fc->set_formulas;
 		stack_push(&YC_STC, select_def);
+		printf("[ debug ] - <:::: --- with_section SELECT axes_statement FROM cube__statement --- ::::>\n");
 	}
   |	SELECT axes_statement FROM cube__statement {
 	  	// printf("[debug] yacc - multi_dim_query ::= SELECT axes_statement FROM cube__statement\n");
@@ -103,6 +109,7 @@ multi_dim_query:
 		stack_pop(&YC_STC, (void **) &select_def);
 		select_def->where_tuple_def = where_tuple_def;
 		stack_push(&YC_STC, select_def);
+		printf("[ debug ] - <:::: multi_dim_query WHERE tuple_statement ::::>\n");
 	}
 ;
 
@@ -118,6 +125,23 @@ with_section:
 		stack_pop(&YC_STC, (void **) &fc);
 		als_add(fc->member_formulas, mf);
 		stack_push(&YC_STC, fc);
+	}
+  | with_section set_formula_statement {
+		SetFormula *sf;
+		stack_pop(&YC_STC, (void **) &sf);
+		FormulaContext *fc;
+		stack_pop(&YC_STC, (void **) &fc);
+		als_add(fc->set_formulas, sf);
+		stack_push(&YC_STC, fc);
+	}
+;
+
+set_formula_statement:
+	SET var_or_block AS set_statement {
+		SetFormula *sf = SetFormula_creat();
+		stack_pop(&YC_STC, (void **) &(sf->set_def));
+		stack_pop(&YC_STC, (void **) &(sf->var_block));
+		stack_push(&YC_STC, sf);
 	}
 ;
 
@@ -249,6 +273,25 @@ set_statement:
 		SetDef *set_def = ids_setdef_new(SET_DEF__TUP_DEF_LS);
 		ids_setdef__set_tuple_def_ls(set_def, t_def_ls);
 		stack_push(&YC_STC, set_def);
+	}
+  | set_function {
+		SetDef *set_def = ids_setdef_new(SET_DEF__SET_FUNCTION);
+		stack_pop(&YC_STC, (void **) &(set_def->set_fn));
+		stack_push(&YC_STC, set_def);
+	}
+  | var_or_block {
+		SetDef *set_def = ids_setdef_new(SET_DEF__VAR_OR_BLOCK);
+		stack_pop(&YC_STC, (void **) &(set_def->var_block));
+		stack_push(&YC_STC, set_def);
+	}
+;
+
+set_function:
+	CHILDREN ROUND_BRACKET_L member_statement ROUND_BRACKET_R {
+		MemberDef *mbr_def;
+		stack_pop(&YC_STC, (void **) &mbr_def);
+		SetFnChildren *fn = SetFnChildren_creat(mbr_def);
+		stack_push(&YC_STC, fn);
 	}
 ;
 
