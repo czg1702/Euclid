@@ -165,4 +165,6 @@ double Factory_evaluate(Factory *fac, Cube *cube, MddTuple *ctx_tuple);
 
 MddSet *SetFnChildren_evolving(MDContext *md_ctx, void *set_fn, Cube *cube, MddTuple *ctx_tuple);
 
+MddMemberRole *MemberFnParent_evolving(MDContext *md_ctx, MemberFnParent *fn_parent, MddTuple *context_tuple, Cube *cube);
+
 #endif

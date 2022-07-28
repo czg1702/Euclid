@@ -19,6 +19,12 @@ MemberDef *ids_mbrdef_new__mbr_abs_path(ArrayList *mbr_abs_path)
     return def;
 }
 
+MemberDef *MemberDef_creat(ids_ct t_cons) {
+    MemberDef *mdef = obj_alloc(sizeof(MemberDef), OBJ_TYPE__MemberDef);
+    mdef->t_cons = t_cons;
+    return mdef;
+}
+
 MembersDef *ids_mbrsdef_new(ids_ct t_cons)
 {
     MembersDef *def = (MembersDef *)mem_alloc_0(sizeof(MembersDef));
@@ -135,5 +141,11 @@ MDContext *MDContext_creat() {
 SetFnChildren *SetFnChildren_creat(MemberDef *m_def) {
     SetFnChildren *fn = obj_alloc(sizeof(SetFnChildren), OBJ_TYPE__SET_FN_CHILDREN);
     fn->m_def = m_def;
+    return fn;
+}
+
+MemberFnParent *MemberFnParent_creat(MemberDef *child_def) {
+    MemberFnParent *fn = obj_alloc(sizeof(MemberFnParent), OBJ_TYPE__MemberFnParent);
+    fn->child_def = child_def;
     return fn;
 }

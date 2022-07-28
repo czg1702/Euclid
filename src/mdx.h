@@ -19,14 +19,17 @@ typedef struct __vector_measures__
 typedef unsigned char ids_ct;
 
 #define MEMBER_DEF__MBR_ABS_PATH 1
+#define MEMBER_DEF__MBR_FUNCTION 2
 
 typedef struct member_definition
 {
     ids_ct t_cons;
     ArrayList *mbr_abs_path;
+    void *member_fn;
 } MemberDef;
 
 MemberDef *ids_mbrdef_new__mbr_abs_path(ArrayList *);
+MemberDef *MemberDef_creat(ids_ct t_cons);
 
 #define MBRS_DEF__MBR_DEF_LS 1
 
@@ -160,5 +163,11 @@ typedef struct set_fn_children
     MemberDef *m_def;
 } SetFnChildren;
 SetFnChildren *SetFnChildren_creat(MemberDef *m_def);
+
+typedef struct mbr_fn_parent
+{
+    MemberDef *child_def;
+} MemberFnParent;
+MemberFnParent *MemberFnParent_creat(MemberDef *child_def);
 
 #endif

@@ -38,6 +38,9 @@ Stack YC_STC = { 0 };
 %token SET			/* set */
 %token CHILDREN		/* children */
 
+/* member functions key words */
+%token PARENT		/* parent */
+
 /* punctuations */
 %token COMMA				/* , */
 %token DOT					/* . */
@@ -352,6 +355,13 @@ member_statement:
 		ArrayList *mbr_abs_path;
 		stack_pop(&YC_STC, (void **) &mbr_abs_path);
 		MemberDef *mbr_def = ids_mbrdef_new__mbr_abs_path(mbr_abs_path);
+		stack_push(&YC_STC, mbr_def);
+	}
+  | PARENT ROUND_BRACKET_L member_statement ROUND_BRACKET_R {
+		MemberFnParent *fn = MemberFnParent_creat(NULL);
+		stack_pop(&YC_STC, (void **) &(fn->child_def));
+		MemberDef *mbr_def = MemberDef_creat(MEMBER_DEF__MBR_FUNCTION);
+		mbr_def->member_fn = fn;
 		stack_push(&YC_STC, mbr_def);
 	}
 ;

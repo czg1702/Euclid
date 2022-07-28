@@ -824,8 +824,14 @@ MddMemberRole *ids_mbrsdef__build(MDContext *md_ctx, MemberDef *m_def, MddTuple 
 					return mdd_mr__create(mbr, dr);
 			}
 		}
-	}
-	else
+	} else if (m_def->t_cons == MEMBER_DEF__MBR_FUNCTION) {
+		if (obj_type_of(m_def->member_fn) == OBJ_TYPE__MemberFnParent) {
+			return MemberFnParent_evolving(md_ctx, m_def->member_fn, context_tuple, cube);
+		} else {
+			printf("[ error ] - ids_mbrsdef__build() obj_type_of(m_def->member_fn)\n");
+			exit(1);
+		}
+	} else
 	{
 		printf("[error] Unknown type about defining dimension member.\n");
 		exit(1);
@@ -1074,4 +1080,10 @@ MddSet *SetFnChildren_evolving(MDContext *md_ctx, void *fn, Cube *cube, MddTuple
 		}
 	}
 	return set;
+}
+
+MddMemberRole *MemberFnParent_evolving(MDContext *md_ctx, MemberFnParent *fn_parent, MddTuple *context_tuple, Cube *cube) {
+	MddMemberRole *child_mr = ids_mbrsdef__build(md_ctx, fn_parent->child_def, context_tuple, cube);
+	Member *parent_m = find_member_by_gid(child_mr->member->p_gid);
+	return mdd_mr__create(parent_m, child_mr->dim_role);
 }

@@ -83,6 +83,10 @@ children {
 	return CHILDREN;
 }
 
+parent {
+	return PARENT;
+}
+
 [_a-zA-Z][_a-zA-Z0-9]*	{
 	//printf("-------> token yytext[%s] yyleng[%d]\n", yytext, yyleng);
 	return VAR;
