@@ -149,7 +149,7 @@ set_formula_statement:
 ;
 
 member_formula_statement:
-	MEMBER member_absolute_path AS expression {
+	MEMBER var_block_chain AS expression {
 		MemberFormula *mf = MemberFormula_creat();
 		stack_pop(&YC_STC, (void **) &(mf->exp));
 		stack_pop(&YC_STC, (void **) &(mf->path));
@@ -350,8 +350,8 @@ mbrs_statement:
 ;
 
 member_statement:
-	member_absolute_path {
-		// // printf("[debug] yacc - member_statement ::= member_absolute_path\n");
+	var_block_chain {
+		// // printf("[debug] yacc - member_statement ::= var_block_chain\n");
 		ArrayList *mbr_abs_path;
 		stack_pop(&YC_STC, (void **) &mbr_abs_path);
 		MemberDef *mbr_def = ids_mbrdef_new__mbr_abs_path(mbr_abs_path);
@@ -462,37 +462,37 @@ create_dimensions:
 ;
 
 create_members:
-	CREATE MEMBERS member_absolute_path {
+	CREATE MEMBERS var_block_chain {
 		ArrayList *mbr_path_ls;
 		stack_pop(&YC_STC, (void **) &mbr_path_ls);
 		ArrayList *mbrs_ls = als_create(128, "ele type: ArrayList *, yacc create_members");
 		als_add(mbrs_ls, mbr_path_ls);
 		stack_push(&YC_STC, mbrs_ls);
-//printf("STACK - pop  : member_absolute_path\n");
+//printf("STACK - pop  : var_block_chain\n");
 //printf("STACK - push : create_members\n");
 	}
-  |	create_members COMMA member_absolute_path {
+  |	create_members COMMA var_block_chain {
 		ArrayList *mbr_path_ls;
 		stack_pop(&YC_STC, (void **) &mbr_path_ls);
 		ArrayList *mbrs_ls;
 		stack_pop(&YC_STC, (void **) &mbrs_ls);
 		als_add(mbrs_ls, mbr_path_ls);
 		stack_push(&YC_STC, mbrs_ls);
-//printf("STACK - pop  : member_absolute_path\n");
+//printf("STACK - pop  : var_block_chain\n");
 //printf("STACK - pop  : create_members\n");
 //printf("STACK - push : create_members\n");
 	}
 ;
 
-member_absolute_path:
+var_block_chain:
 	var_or_block {
 		char *str;
 		stack_pop(&YC_STC, (void **) &str);
-		ArrayList *als = als_create(16, "ele type: char *, yacc member_absolute_path");
+		ArrayList *als = als_create(16, "ele type: char *, yacc var_block_chain");
 		als_add(als, str);
 		stack_push(&YC_STC, als);
 	}
-  |	member_absolute_path DOT var_or_block {
+  |	var_block_chain DOT var_or_block {
 		char *str;
 		stack_pop(&YC_STC, (void **) &str);
 		ArrayList *als;
