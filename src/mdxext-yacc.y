@@ -485,17 +485,12 @@ create_members:
 ;
 
 member_absolute_path:
-	var_or_block DOT var_or_block {
-		char *str_left, *str_right;
-		stack_pop(&YC_STC, (void **) &str_right);
-		stack_pop(&YC_STC, (void **) &str_left);
+	var_or_block {
+		char *str;
+		stack_pop(&YC_STC, (void **) &str);
 		ArrayList *als = als_create(16, "ele type: char *, yacc member_absolute_path");
-		als_add(als, str_left);
-		als_add(als, str_right);
+		als_add(als, str);
 		stack_push(&YC_STC, als);
-//printf("STACK - pop  : var_or_block\n");
-//printf("STACK - pop  : var_or_block\n");
-//printf("STACK - push : member_absolute_path\n");
 	}
   |	member_absolute_path DOT var_or_block {
 		char *str;
@@ -504,9 +499,6 @@ member_absolute_path:
 		stack_pop(&YC_STC, (void **) &als);
 		als_add(als, str);
 		stack_push(&YC_STC, als);
-//printf("STACK - pop  : var_or_block\n");
-//printf("STACK - pop  : member_absolute_path\n");
-//printf("STACK - push : member_absolute_path\n");
 	}
 ;
 
