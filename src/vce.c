@@ -18,6 +18,11 @@ void vce_init()
     space_ls = als_create(16, "MeasureSpace *");
 }
 
+/* TODO
+ * The bug are not urgent, but need to be fixed.
+ * When inserting new detailed measure data, the order in which it is defined must be the same as the 
+ * order of dimension roles when building the cube, otherwise the data will not be able to be found.
+ */
 int vce_append(EuclidCommand *ec)
 {
     __uint32_t pkg_capacity = *((__uint32_t *)ec->bytes);
@@ -560,6 +565,11 @@ double do_calculate_measure_value(Cube *cube, MddTuple *tuple)
         key->gid = mr->member->gid;
 
         RBNode *node = rbt__find(ax->sor_idx_tree, key);
+
+        if (node == NULL) {
+            // If there is no corresponding coordinate, return a null value directly.
+            return 0.0; // TODO This should return information representing a null value, not a zero value, which must be corrected.
+        }
 
         ScaleOffsetRange *sor = (ScaleOffsetRange *)node->obj;
 
