@@ -467,7 +467,6 @@ void *exe_multi_dim_queries(SelectDef *select_def)
 
 	// Cross these axes to generate result set.
 	unsigned long rs_len = 1;
-	// int i, ax_count = als_size(axes);
 	int i;
 	for (i = 0; i < x_size; i++)
 	{
@@ -475,16 +474,12 @@ void *exe_multi_dim_queries(SelectDef *select_def)
 		rs_len *= mdd_ax__len(ax);
 	}
 
-	// !!! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
 	unsigned int offset_arr[x_size];
 	offset_arr[x_size - 1] = 1;
 
 	for (i = x_size - 2; i >= 0; i--)
 		offset_arr[i] = offset_arr[i + 1] * mdd_ax__len(als_get(axes, i + 1));
 
-	// MddTuple *tuples_matrix[rs_len][als_size(axes)];
-	// MddTuple **tuples_matrix_h = mem_alloc_0(rs_len * x_size);
 	MddTuple **tuples_matrix_h = mem_alloc_0(rs_len * x_size * sizeof(void *));
 
 	int matx_col, matx_row, f;
@@ -498,7 +493,6 @@ void *exe_multi_dim_queries(SelectDef *select_def)
 			{
 				MddTuple *tuple = mdd_ax__get_tuple(ax, i);
 				for (f = 0; f < offset_arr[matx_col]; f++)
-					// tuples_matrix_h[matx_col * rs_len + matx_row++] = tuple;
 					tuples_matrix_h[(matx_row++) * x_size + matx_col] = tuple;
 			}
 		}
