@@ -1055,6 +1055,8 @@ double Factory_evaluate(Factory *fac, Cube *cube, MddTuple *ctx_tuple) {
 		return do_calculate_measure_value(cube, tuple);
 	} else if (fac->t_cons == FACTORY_DEF__DECIMAL) {
 		return fac->decimal;
+	} else if (fac->t_cons == FACTORY_DEF__EXPRESSION) {
+		return Expression_evaluate((Expression *)(fac->exp), cube, ctx_tuple);
 	} else {
 		printf("[ error ] - Factory_evaluate() <program exit>\n");
 	}

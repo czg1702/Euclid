@@ -106,13 +106,15 @@ typedef struct _MD_context_
 MDContext *MDContext_creat();
 
 
-#define FACTORY_DEF__TUP_DEF 1
-#define FACTORY_DEF__DECIMAL 2
+#define FACTORY_DEF__TUP_DEF    1
+#define FACTORY_DEF__DECIMAL    2
+#define FACTORY_DEF__EXPRESSION 3
 typedef struct factory_definition
 {
     ids_ct t_cons;
     TupleDef *tuple_def;
     double decimal;
+    void *exp;
 } Factory;
 Factory *Factory_creat();
 

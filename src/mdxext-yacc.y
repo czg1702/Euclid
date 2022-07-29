@@ -226,6 +226,12 @@ factory:
 
 		stack_push(&YC_STC, f);
 	}
+  | ROUND_BRACKET_L expression ROUND_BRACKET_R {
+		Factory *factory = Factory_creat();
+		factory->t_cons = FACTORY_DEF__EXPRESSION;
+		stack_pop(&YC_STC, (void **) &(factory->exp));
+		stack_push(&YC_STC, factory);
+	}
 ;
 
 cube__statement:
