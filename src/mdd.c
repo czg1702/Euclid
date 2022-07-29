@@ -521,7 +521,6 @@ void *exe_multi_dim_queries(SelectDef *select_def)
 static ArrayList *select_def__build_axes(MDContext *md_ctx, SelectDef *select_def)
 {
 	ArrayList *ax_def_ls = select_def->ax_def_ls;
-	// // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ArrayList *ax_def_ls desc \"%s\"\n", ax_def_ls->desc);
 	Cube *cube = select_def__get_cube(select_def);
 	MddTuple *ref_tuple = cube__basic_ref_vector(cube);
 
@@ -538,8 +537,6 @@ static ArrayList *select_def__build_axes(MDContext *md_ctx, SelectDef *select_de
 		{
 			AxisDef *ax_def = als_get(ax_def_ls, j);
 			MddTuple *ax_head_ref_tuple = ax_def__head_ref_tuple(md_ctx, ax_def, ref_tuple, cube);
-
-			// // printf("[debug] <><><><><><><><><><><><><>      ax_head_ref_tuple [ %p ] ax_head_ref_tuple->mr_ls [ %p ]\n", ax_head_ref_tuple, ax_head_ref_tuple->mr_ls);
 
 			ref_tuple = tuple__merge(ref_tuple, ax_head_ref_tuple);
 		}
@@ -571,14 +568,12 @@ static Cube *select_def__get_cube(SelectDef *select_def)
 
 static MddTuple *cube__basic_ref_vector(Cube *cube)
 {
-	// // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 	MddTuple *tuple = mdd_tp__create();
 	int i, j;
 	int r_count = als_size(cube->dim_role_ls);
 	for (i = 0; i < r_count; i++)
 	{
 		DimensionRole *dim_role = als_get(cube->dim_role_ls, i);
-		// // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  dim_role->dim_gid = %lu\n", dim_role->dim_gid);
 		int mp_size = als_size(member_pool);
 		for (j = 0; j < mp_size; j++)
 		{
@@ -589,21 +584,11 @@ static MddTuple *cube__basic_ref_vector(Cube *cube)
 				mdd_tp__add_mbrole(tuple, mbr_role);
 				break;
 			}
-
-			// // // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  mbr->name = %s    %d\n", mbr->name, mdd_mbr__is_leaf(mbr));
-			// else if (mbr->dim_gid == cube->measure_dim->gid)
-			// 	// // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  measure member = %s\n", mbr->name);
 		}
 	}
-	// // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  cube->measure_dim->gid = %lu\n", cube->measure_dim->gid);
-	// for (i = 0; i < als_size(cube->measure_mbrs); i++)
-	// {
-	// 	Member *mbr = als_get(cube->measure_mbrs, i);
-	// 	// // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  measure member = %s    %d\n", mbr->name, mdd_mbr__is_leaf(mbr));
-	// }
+
 	MddMemberRole *measure_mr = mdd_mr__create(als_get(cube->measure_mbrs, 0), NULL);
 	mdd_tp__add_mbrole(tuple, measure_mr);
-	// // printf("[debug] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 	return tuple;
 }
 
@@ -627,15 +612,6 @@ static MddTuple *tuple__merge(MddTuple *ctx_tuple, MddTuple *tuple_frag)
 		for (j = 0; j < frag_sz; j++)
 		{
 			MddMemberRole *f_mr = (MddMemberRole *)als_get(tuple_frag->mr_ls, j);
-
-			// // // printf("[debug] *******************************************************************************\n");
-			// // // // printf("[debug] ******************* ctx_mr = %p \n", ctx_mr);
-			// // // printf("[debug] ******************* ctx_mr->dim_role = %p \n", ctx_mr->dim_role);
-			// // // // printf("[debug] ******************* ctx_mr->dim_role->gid = %lu \n", ctx_mr->dim_role->gid);
-			// // // // printf("[debug] ******************* f_mr = %p \n", f_mr);
-			// // // printf("[debug] ******************* f_mr->dim_role = %p \n", f_mr->dim_role);
-			// // // // printf("[debug] ******************* f_mr->dim_role->gid = %lu \n", f_mr->dim_role->gid);
-			// // // printf("[debug] *******************************************************************************\n");
 
 			if ((ctx_mr->dim_role != NULL && f_mr->dim_role != NULL) && (ctx_mr->dim_role->gid == f_mr->dim_role->gid))
 			{
@@ -712,7 +688,6 @@ MddTuple *mdd_tp__create()
 {
 	MddTuple *tp = (MddTuple *)mem_alloc_0(sizeof(MddTuple));
 	tp->mr_ls = als_create(32, "MddMemberRole *");
-	// printf("[debug] 创建 MddTuple >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> tp->mr_ls->idx = %u\n", tp->mr_ls->idx);
 	return tp;
 }
 
@@ -726,8 +701,6 @@ MddMemberRole *mdd_mr__create(Member *m, DimensionRole *dr)
 
 MddTuple *ids_setdef__head_ref_tuple(MDContext *md_ctx, SetDef *set_def, MddTuple *context_tuple, Cube *cube)
 {
-	// printf("************************************************************  [set_def->tuple_def_ls->desc]  %s\n", set_def->tuple_def_ls->desc);
-	// printf("************************************************************  [als_size(set_def->tuple_def_ls)]  %d\n", als_size(set_def->tuple_def_ls));
 	if (set_def->t_cons == SET_DEF__TUP_DEF_LS) {
 		return ids_tupledef__build(md_ctx, als_get(set_def->tuple_def_ls, 0), context_tuple, cube);
 	} else if (set_def->t_cons == SET_DEF__SET_FUNCTION) {
@@ -816,6 +789,18 @@ MddMemberRole *ids_mbrsdef__build(MDContext *md_ctx, MemberDef *m_def, MddTuple 
 				Member *mbr = (Member *)als_get(cube->measure_mbrs, i);
 				if (strcmp(mbr->name, mea_m_name) == 0)
 					return mdd_mr__create(mbr, dr);
+			}
+
+			// formula member
+			int f_sz = als_size(md_ctx->select_def->member_formulas);
+			for (i = 0; i < f_sz; i++) {
+				MemberFormula *f = als_get(md_ctx->select_def->member_formulas, i);
+				if ( (strcmp(als_get(f->path, 0), als_get(m_def->mbr_abs_path, 0)) == 0)
+						&& (strcmp(als_get(f->path, 1), als_get(m_def->mbr_abs_path, 1)) == 0) ) {
+					MddMemberRole *mr = mdd_mr__create(NULL, NULL);
+					mr->member_formula = f;
+					return mr;
+				}
 			}
 		}
 	} else if (m_def->t_cons == MEMBER_DEF__MBR_FUNCTION) {

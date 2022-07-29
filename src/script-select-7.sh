@@ -13,6 +13,8 @@
 "  ( measure.cost, [ending region].[Europe].[UK] ), " \
 "  ( measure.cost, [ending region].[Asia] ), " \
 "  ( measure.cost, [ending region].[America] ), " \
-"  ( measure.cost, [ending region].[Europe] ) " \
+"  ( measure.cost, [ending region].[Europe] ), " \
+"  ( measure.MM001, [ending region].[Europe] ), " \
+"  ( measure.MM001, [ending region].[Asia] ) " \
 "} on 0 " \
 "from [logistics.test] where ( Goods.[foods].[nut], Transport.[railway], [starting region].[Asia].[China], [starting date].[2019].[Q3].[M7], [completion date].[2019].[Q3].[M7] )"
